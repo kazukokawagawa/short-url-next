@@ -1,68 +1,50 @@
-'use client'
+import { createClient } from "@/utils/supabase/server" // 引入服务端 Supabase
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { ShortenForm } from "./shorten-form" // *注意：我们将之前的 Client 端表单拆分出去
 
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Label } from '@/components/ui/label'
+// 1. 我们先把之前的 Client 端表单代码拆成一个单独的组件
+//    因为 page.tsx 即将变成 async server component，不能直接用 useState
+//    请看下一步骤关于 ShortenForm 的代码
+export default async function Home() {
+  const supabase = await createClient()
 
-export default function Home() {
-  const [url, setUrl] = useState('')
-  const [shortUrl, setShortUrl] = useState('')
-  const [loading, setLoading] = useState(false)
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-
-    try {
-      const res = await fetch('/api/shorten', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url }),
-      })
-      const data = await res.json()
-
-      if (data.slug) {
-        setShortUrl(`${window.location.origin}/${data.slug}`)
-      }
-    } catch (error) {
-      console.error(error)
-    } finally {
-      setLoading(false)
-    }
-  }
+  // 核心：在服务端直接获取用户Session
+  const { data: { user } } = await supabase.auth.getUser()
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-24 bg-gradient-to-br from-indigo-50 via-white to-cyan-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
-      <Card className="w-[400px]">
+    <main className="flex min-h-screen flex-col items-center p-24 relative">
+
+      {/* 顶部导航区 */}
+      <div className="absolute top-4 right-4 md:top-8 md:right-8">
+        {user ? (
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-muted-foreground hidden md:inline-block">
+              {user.email}
+            </span>
+            <Link href="/dashboard">
+              <Button>Go to Dashboard</Button>
+            </Link>
+          </div>
+        ) : (
+          <Link href="/login">
+            <Button variant="outline">Login</Button>
+          </Link>
+        )}
+      </div>
+
+      {/* 主体卡片 */}
+      <Card className="w-full max-w-[450px] mt-20">
         <CardHeader>
-          <CardTitle>Short Link Generator</CardTitle>
-          <CardDescription>Serverless & BaaS powered</CardDescription>
+          <CardTitle className="text-2xl text-center">Short Link Generator</CardTitle>
+          <CardDescription className="text-center">
+            Serverless & BaaS powered
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="grid w-full items-center gap-4">
-            <div className="flex flex-col space-y-1.5">
-              <Label htmlFor="url">Original URL</Label>
-              <Input
-                id="url"
-                placeholder="https://example.com"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                required
-              />
-            </div>
-            <Button disabled={loading} type="submit">
-              {loading ? 'Shortening...' : 'Shorten URL'}
-            </Button>
-          </form>
-
-          {shortUrl && (
-            <div className="mt-4 p-4 bg-green-50 text-green-700 rounded-md break-all">
-              <p className="text-sm font-semibold">Success!</p>
-              <a href={shortUrl} target="_blank" className="underline">{shortUrl}</a>
-            </div>
-          )}
+          {/* 这里调用拆分出去的客户端表单组件 */}
+          <ShortenForm />
         </CardContent>
       </Card>
     </main>
