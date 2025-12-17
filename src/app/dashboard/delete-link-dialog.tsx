@@ -19,16 +19,27 @@ import {
 } from "@/components/ui/alert-dialog"
 
 import { ActionScale } from "@/components/action-scale"
+import { SessionExpiredDialog } from "@/components/session-expired-dialog"
 
 export function DeleteLinkDialog({ id }: { id: number }) {
     const [open, setOpen] = useState(false)
+
     const [isDeleting, setIsDeleting] = useState(false)
+    // 1. 新增状态
+    const [showSessionExpired, setShowSessionExpired] = useState(false)
 
     const handleDelete = async () => {
         setIsDeleting(true)
 
         // 调用 Server Action
         const result = await deleteLink(id)
+
+        // 2. 检查标记
+        if (result?.needsLogin) {
+            setIsDeleting(false)
+            setShowSessionExpired(true) // 🚨 触发弹窗
+            return
+        }
 
         if (result?.error) {
             toast.error("Failed to delete", {
@@ -76,6 +87,11 @@ export function DeleteLinkDialog({ id }: { id: number }) {
                     </LoadingButton>
                 </AlertDialogFooter>
             </AlertDialogContent>
+            {/* 3. 挂载失效弹窗 */}
+            <SessionExpiredDialog
+                open={showSessionExpired}
+                onOpenChange={setShowSessionExpired}
+            />
         </AlertDialog>
     )
 }

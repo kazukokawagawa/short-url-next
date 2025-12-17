@@ -7,14 +7,23 @@ import { Label } from '@/components/ui/label'
 import { motion, AnimatePresence } from "framer-motion"
 import { CopyButton } from "@/components/copy-button"
 import { ActionScale } from "@/components/action-scale"
+import { cn } from "@/lib/utils"
 
 export function ShortenForm() {
     const [url, setUrl] = useState('')
     const [shortUrlSlug, setShortUrlSlug] = useState('')
     const [loading, setLoading] = useState(false)
+    const [errors, setErrors] = useState<{ url?: string }>({})
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
+        setErrors({})
+
+        if (!url) {
+            setErrors({ url: "请输入需要缩短的 URL" })
+            return
+        }
+
         setLoading(true)
 
         try {
@@ -37,16 +46,22 @@ export function ShortenForm() {
 
     return (
         <div className="grid w-full items-center gap-4">
-            <form onSubmit={handleSubmit} className="grid w-full items-center gap-4">
+            <form onSubmit={handleSubmit} className="grid w-full items-center gap-4" noValidate>
                 <div className="flex flex-col space-y-1.5">
-                    <Label htmlFor="url">需要缩短的URL</Label>
+                    <Label htmlFor="url" className={errors.url ? "text-red-500" : ""}>需要缩短的URL</Label>
                     <Input
                         id="url"
                         placeholder="https://example.com"
                         value={url}
                         onChange={(e) => setUrl(e.target.value)}
-                        required
+                        // required // 移除 required
+                        className={cn(errors.url && "border-red-500 focus-visible:ring-red-500")}
                     />
+                    {errors.url && (
+                        <span className="text-xs text-red-500 animate-in fade-in slide-in-from-top-1">
+                            {errors.url}
+                        </span>
+                    )}
                 </div>
                 <ActionScale>
                     <LoadingButton loading={loading} type="submit" className="w-full">

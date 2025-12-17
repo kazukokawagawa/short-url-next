@@ -1,13 +1,11 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
-import { createClient } from '@/utils/supabase/server'
+import { revalidatePath } from "next/cache"
+import { createClient } from "@/utils/supabase/server"
+import { getFriendlyErrorMessage } from "@/utils/error-mapping" // 1. 引入
 
 export async function login(formData: FormData) {
     const supabase = await createClient()
-
-    // 从表单获取数据
     const email = formData.get('email') as string
     const password = formData.get('password') as string
 
@@ -17,29 +15,31 @@ export async function login(formData: FormData) {
     })
 
     if (error) {
-        console.error('Login Error Details:', error.message)
-        return redirect('/login?message=Could not authenticate user')
+        // 2. 使用工具函数转换错误信息
+        return { error: getFriendlyErrorMessage(error) }
     }
 
     revalidatePath('/', 'layout')
-    redirect('/dashboard') // 登录成功跳转到仪表盘
+    return { success: true }
 }
 
 export async function signup(formData: FormData) {
     const supabase = await createClient()
-
     const email = formData.get('email') as string
     const password = formData.get('password') as string
 
     const { error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+            emailRedirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/callback`,
+        },
     })
 
     if (error) {
-        return redirect('/login?message=Could not authenticate user')
+        // 2. 使用工具函数转换错误信息
+        return { error: getFriendlyErrorMessage(error) }
     }
 
-    revalidatePath('/', 'layout')
-    redirect('/dashboard')
+    return { success: true }
 }

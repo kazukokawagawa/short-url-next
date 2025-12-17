@@ -55,7 +55,10 @@ export async function createLink(formData: FormData) {
 
     // 获取当前用户
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return redirect('/login')
+    // 🔴 修改点：不再直接 redirect，而是返回一个标记
+    if (!user) {
+        return { error: "User not authenticated", needsLogin: true }
+    }
 
     const url = formData.get('url') as string
     const slug = formData.get('slug') as string || nanoid(6) // 如果用户没填自定义短码，就生成一个
@@ -114,7 +117,10 @@ export async function deleteLink(id: number) {
     const supabase = await createClient()
 
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return redirect('/login')
+    // 🔴 修改点
+    if (!user) {
+        return { error: "User not authenticated", needsLogin: true }
+    }
 
     const { error } = await supabase
         .from('links')
