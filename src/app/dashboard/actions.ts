@@ -62,6 +62,7 @@ export async function createLink(formData: FormData) {
 
     const url = formData.get('url') as string
     const slug = formData.get('slug') as string || nanoid(6) // 如果用户没填自定义短码，就生成一个
+    const isNoIndex = formData.get('isNoIndex') === 'true' // 获取 isNoIndex 参数
 
     // --- 格式检查 ---
     if (!url || !isValidUrl(url)) {
@@ -93,7 +94,8 @@ export async function createLink(formData: FormData) {
         .insert({
             original_url: url,
             slug: slug,
-            user_id: user.id
+            user_id: user.id,
+            is_no_index: isNoIndex
         })
 
     if (error) {

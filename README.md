@@ -70,6 +70,9 @@ create table public.links (
   user_id uuid references auth.users not null default auth.uid()
 );
 
+alter table public.links 
+add column is_no_index boolean default true;
+
 -- 开启行级安全策略 (RLS)
 alter table public.links enable row level security;
 

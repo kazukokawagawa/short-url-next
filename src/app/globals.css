@@ -124,3 +124,47 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  /* 1. Webkit 核心浏览器 (Chrome, Edge, Safari) */
+
+  /* 滚动条整体宽度 */
+  ::-webkit-scrollbar {
+    width: 8px;
+    /* 垂直滚动条宽度 */
+    height: 8px;
+    /* 水平滚动条高度 */
+  }
+
+  /* 滚动条轨道 (背景) */
+  ::-webkit-scrollbar-track {
+    background: transparent;
+    /* 透明背景，更现代 */
+    border-radius: 99px;
+  }
+
+  /* 滚动条滑块 (那个移动的小条) */
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--border);
+    /* 使用 shadcn 的边框颜色，自动适配黑白模式 */
+    border-radius: 99px;
+    /* 完全圆角 */
+    border: 2px solid transparent;
+    /* 制造一种“浮空”的效果 */
+    background-clip: content-box;
+  }
+
+  /* 鼠标悬停在滑块上时 */
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: color-mix(in srgb, var(--muted-foreground), transparent 50%);
+    /* 稍微变深一点 */
+  }
+
+  /* 2. Firefox 浏览器 (使用标准属性) */
+  * {
+    scrollbar-width: thin;
+    /* 变细 */
+    scrollbar-color: var(--border) transparent;
+    /* 滑块颜色 轨道颜色 */
+  }
+}

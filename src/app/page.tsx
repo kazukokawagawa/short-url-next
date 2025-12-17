@@ -47,7 +47,7 @@ export default async function Home() {
         </CardHeader>
         <CardContent>
           {/* 这里调用拆分出去的客户端表单组件 */}
-          <ShortenForm />
+          <ShortenForm user={user} />
         </CardContent>
       </Card>
     </main>
