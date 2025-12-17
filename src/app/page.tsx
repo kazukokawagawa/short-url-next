@@ -24,12 +24,12 @@ export default async function Home() {
               {user.email}
             </span>
             <Link href="/dashboard">
-              <Button>Go to Dashboard</Button>
+              <Button>控制台</Button>
             </Link>
           </div>
         ) : (
           <Link href="/login">
-            <Button variant="outline">Login</Button>
+            <Button variant="outline">登录</Button>
           </Link>
         )}
       </div>
@@ -37,9 +37,9 @@ export default async function Home() {
       {/* 主体卡片 */}
       <Card className="w-full max-w-[450px] mt-20">
         <CardHeader>
-          <CardTitle className="text-2xl text-center">Short Link Generator</CardTitle>
+          <CardTitle className="text-2xl text-center">短链接生成器</CardTitle>
           <CardDescription className="text-center">
-            Serverless & BaaS powered
+            Serverless & BaaS
           </CardDescription>
         </CardHeader>
         <CardContent>

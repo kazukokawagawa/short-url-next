@@ -39,7 +39,7 @@ export function ShortenForm() {
         <div className="grid w-full items-center gap-4">
             <form onSubmit={handleSubmit} className="grid w-full items-center gap-4">
                 <div className="flex flex-col space-y-1.5">
-                    <Label htmlFor="url">Original URL</Label>
+                    <Label htmlFor="url">需要缩短的URL</Label>
                     <Input
                         id="url"
                         placeholder="https://example.com"
@@ -50,7 +50,7 @@ export function ShortenForm() {
                 </div>
                 <ActionScale>
                     <Button disabled={loading} type="submit" className="w-full">
-                        {loading ? 'Shortening...' : 'Shorten URL'}
+                        {loading ? 'Shortening...' : '生成短链接'}
                     </Button>
                 </ActionScale>
             </form>

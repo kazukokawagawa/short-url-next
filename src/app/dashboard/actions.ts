@@ -28,14 +28,11 @@ export async function createLink(formData: FormData) {
 
     if (error) {
         console.error(error)
-        // 实际项目中这里应该返回错误给前端，这里简化处理
-        return
+        return { error: error.message }
     }
 
-    // 关键：刷新 Dashboard 数据，关闭弹窗后用户能立马看到新数据
     revalidatePath('/dashboard')
-
-    // 注意：这里我们不 redirect，只是刷新当前页面的数据
+    return { success: true }
 }
 
 // 2. 登出的 Action

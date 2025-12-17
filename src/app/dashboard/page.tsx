@@ -21,9 +21,9 @@ export default async function Dashboard() {
             {/* 顶部 Header */}
             <div className="flex justify-between items-center mb-8 border-b pb-4">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+                    <h1 className="text-3xl font-bold tracking-tight">控制台</h1>
                     <p className="text-muted-foreground mt-1">
-                        Welcome back, {user.email}
+                        欢迎回来, {user.email}
                     </p>
                 </div>
 
@@ -33,7 +33,7 @@ export default async function Dashboard() {
 
                     {/* 登出按钮 (放在 form 里以触发表单提交) */}
                     <form action={signOut}>
-                        <Button variant="outline">Sign out</Button>
+                        <Button variant="outline">登出</Button>
                     </form>
                 </div>
             </div>

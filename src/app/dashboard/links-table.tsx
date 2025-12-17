@@ -17,7 +17,7 @@ const MotionRow = motion(TableRow)
 
 export function LinksTable({ links }: { links: any[] }) {
     if (!links?.length) {
-        return <div className="text-center py-10 text-muted-foreground">No links created yet.</div>
+        return <div className="text-center py-10 text-muted-foreground">没有任何链接被创建</div>
     }
 
     return (
@@ -25,10 +25,10 @@ export function LinksTable({ links }: { links: any[] }) {
             <Table>
                 <TableHeader>
                     <TableRow>
-                        <TableHead>Short Link</TableHead>
-                        <TableHead>Original URL</TableHead>
-                        <TableHead>Created</TableHead>
-                        <TableHead className="text-right">Clicks</TableHead>
+                        <TableHead>短链接</TableHead>
+                        <TableHead>原始链接</TableHead>
+                        <TableHead>创建时间</TableHead>
+                        <TableHead className="text-right">点击次数</TableHead>
                         <TableHead className="w-[50px]"></TableHead>
                     </TableRow>
                 </TableHeader>

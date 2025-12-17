@@ -14,26 +14,37 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { createLink } from "./actions"
+import { toast } from "sonner"
 
 export function CreateLinkDialog() {
     const [open, setOpen] = useState(false)
 
     // 包装一下 Action，以便执行完关闭弹窗
     async function clientAction(formData: FormData) {
-        await createLink(formData)
-        setOpen(false) // 关闭弹窗
+        const result = await createLink(formData)
+
+        if (result?.error) {
+            toast.error("无法创建链接", {
+                description: result.error,
+            })
+        } else {
+            setOpen(false)
+            toast.success("链接创建成功!", {
+                description: "短链接已准备就绪，可以分享了。",
+            })
+        }
     }
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button>Create New Link</Button>
+                <Button>创建新的链接</Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Create Link</DialogTitle>
+                    <DialogTitle>创建新的链接</DialogTitle>
                     <DialogDescription>
-                        Paste your long URL below to shorten it.
+                        在此创建你的短链接URL
                     </DialogDescription>
                 </DialogHeader>
 
@@ -52,7 +63,7 @@ export function CreateLinkDialog() {
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="slug" className="text-right">
-                            Slug (Opt)
+                            后缀 (可选)
                         </Label>
                         <Input
                             id="slug"
@@ -62,7 +73,7 @@ export function CreateLinkDialog() {
                         />
                     </div>
                     <DialogFooter>
-                        <Button type="submit">Save changes</Button>
+                        <Button type="submit">保存更改</Button>
                     </DialogFooter>
                 </form>
             </DialogContent>
