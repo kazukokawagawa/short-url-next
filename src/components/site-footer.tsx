@@ -1,20 +1,61 @@
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip"
+import { GitCommit, Clock } from "lucide-react"
+import { format } from "date-fns"
+
 export function SiteFooter() {
     return (
         <footer className="fixed bottom-4 left-0 right-0 w-full text-center text-xs text-muted-foreground z-50 pointer-events-none">
             <div className="pointer-events-auto inline-block">
                 <p>
-                    &copy; {new Date().getFullYear()} Chiyuyu. All rights reserved.
+                    &copy; {new Date().getFullYear()} LinkFlow. All rights reserved.
                 </p>
-                <p className="mt-1">
-                    Built with <span className="text-red-400">❤</span> by{" "}
-                    <a
-                        href="https://chiyu.it"
-                        target="_blank"
-                        className="underline hover:text-foreground transition-colors"
-                    >
-                        池鱼
-                    </a>
-                </p>
+
+                <div className="mt-2 flex items-center justify-center gap-4">
+                    {/* 作者信息 */}
+                    <span>
+                        Built by <a href="#" className="underline hover:text-foreground">ChiYu</a>
+                    </span>
+
+                    {/* 分隔符 */}
+                    <span className="text-muted-foreground/30">|</span>
+
+                    {/* 版本信息 (带 Tooltip) */}
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <div className="flex items-center gap-1 cursor-help hover:text-foreground transition-colors">
+                                    {/* 显示简短版本号: v1.0.0 */}
+                                    <span>v{process.env.NEXT_PUBLIC_APP_VERSION}</span>
+                                    {/* 如果是生产环境，显示 Commit Hash 的前几位 */}
+                                    {process.env.NEXT_PUBLIC_COMMIT_HASH !== 'dev-build' && (
+                                        <span className="font-mono text-[10px] opacity-70">
+                                            ({process.env.NEXT_PUBLIC_COMMIT_HASH})
+                                        </span>
+                                    )}
+                                </div>
+                            </TooltipTrigger>
+
+                            {/* 悬停显示的详细信息 */}
+                            <TooltipContent className="text-xs">
+                                <div className="flex flex-col gap-1">
+                                    <div className="flex items-center gap-2">
+                                        <GitCommit className="h-3 w-3" />
+                                        <span>Commit: {process.env.NEXT_PUBLIC_COMMIT_HASH}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <Clock className="h-3 w-3" />
+                                        <span>Built: {process.env.NEXT_PUBLIC_BUILD_TIME ? format(new Date(process.env.NEXT_PUBLIC_BUILD_TIME), 'yyyy-MM-dd HH:mm') : 'Local'}</span>
+                                    </div>
+                                </div>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                </div>
             </div>
         </footer>
     )
