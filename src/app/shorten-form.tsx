@@ -100,6 +100,8 @@ export function ShortenForm({ user }: { user: User | null }) {
                             onChange={(e) => setUrl(e.target.value)}
                             className={cn("pl-9", errors.url && "border-red-500 focus-visible:ring-red-500")}
                             onFocus={() => setShowCustomOption(true)}
+                            autoComplete="off"
+                            data-1p-ignore
                         />
                     </div>
                     {errors.url && (
@@ -189,6 +191,8 @@ export function ShortenForm({ user }: { user: User | null }) {
                                             value={slug}
                                             onChange={(e) => setSlug(e.target.value)}
                                             className={cn("pl-9 transition-colors", slug && "border-purple-200 focus-visible:ring-purple-500/20 bg-purple-50/30")}
+                                            autoComplete="off"
+                                            data-1p-ignore
                                         />
                                     </div>
                                 </div>
