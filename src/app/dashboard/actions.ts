@@ -4,6 +4,7 @@ import { createClient } from "@/utils/supabase/server"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { nanoid } from "nanoid"
+import { getFriendlyErrorMessage } from "@/utils/error-mapping"
 
 // 1. 创建短链接的 Action
 export async function createLink(formData: FormData) {
@@ -28,7 +29,7 @@ export async function createLink(formData: FormData) {
 
     if (error) {
         console.error(error)
-        return { error: error.message }
+        return { error: getFriendlyErrorMessage(error) }
     }
 
     revalidatePath('/dashboard')
@@ -56,7 +57,7 @@ export async function deleteLink(id: number) {
         .eq('user_id', user.id)
 
     if (error) {
-        return { error: error.message }
+        return { error: getFriendlyErrorMessage(error) }
     }
 
     revalidatePath('/dashboard')

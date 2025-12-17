@@ -5,6 +5,7 @@ import { deleteLink } from "./actions"
 import { toast } from "sonner"
 import { Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { LoadingButton } from "@/components/ui/loading-button"
 import {
     AlertDialog,
     AlertDialogAction,
@@ -60,18 +61,19 @@ export function DeleteLinkDialog({ id }: { id: number }) {
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                     {/* 取消按钮 */}
-                    <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+                    <AlertDialogCancel disabled={isDeleting}>取消</AlertDialogCancel>
                     {/* 确认删除按钮 - 设为红色样式 */}
-                    <AlertDialogAction
+                    {/* 确认删除按钮 - 设为红色样式 */}
+                    <LoadingButton
                         onClick={(e) => {
                             e.preventDefault() // 阻止默认关闭行为，等待异步操作完成
                             handleDelete()
                         }}
-                        disabled={isDeleting}
+                        loading={isDeleting}
                         className="bg-red-600 hover:bg-red-700 text-white"
                     >
-                        {isDeleting ? "Deleting..." : "Delete"}
-                    </AlertDialogAction>
+                        {isDeleting ? "删除中..." : "删除"}
+                    </LoadingButton>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>

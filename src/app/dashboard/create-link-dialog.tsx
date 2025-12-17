@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
+import { LoadingButton } from "@/components/ui/loading-button"
 import {
     Dialog,
     DialogContent,
@@ -20,9 +21,17 @@ import { ActionScale } from "@/components/action-scale"
 export function CreateLinkDialog() {
     const [open, setOpen] = useState(false)
 
+    const [loading, setLoading] = useState(false)
+
     // 包装一下 Action，以便执行完关闭弹窗
-    async function clientAction(formData: FormData) {
+    async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault()
+        setLoading(true)
+
+        const formData = new FormData(e.currentTarget)
         const result = await createLink(formData)
+
+        setLoading(false)
 
         if (result?.error) {
             toast.error("无法创建链接", {
@@ -51,7 +60,7 @@ export function CreateLinkDialog() {
                     </DialogDescription>
                 </DialogHeader>
 
-                <form action={clientAction} className="grid gap-4 py-4">
+                <form onSubmit={onSubmit} className="grid gap-4 py-4">
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="url" className="text-right">
                             URL
@@ -77,7 +86,7 @@ export function CreateLinkDialog() {
                     </div>
                     <DialogFooter>
                         <ActionScale>
-                            <Button type="submit">保存更改</Button>
+                            <LoadingButton loading={loading} type="submit">保存更改</LoadingButton>
                         </ActionScale>
                     </DialogFooter>
                 </form>
