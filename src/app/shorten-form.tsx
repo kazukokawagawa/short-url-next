@@ -4,10 +4,13 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { motion, AnimatePresence } from "framer-motion"
+import { CopyButton } from "@/components/copy-button"
+import { ActionScale } from "@/components/action-scale"
 
 export function ShortenForm() {
     const [url, setUrl] = useState('')
-    const [shortUrl, setShortUrl] = useState('')
+    const [shortUrlSlug, setShortUrlSlug] = useState('')
     const [loading, setLoading] = useState(false)
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -23,7 +26,7 @@ export function ShortenForm() {
             const data = await res.json()
 
             if (data.slug) {
-                setShortUrl(`${window.location.origin}/${data.slug}`)
+                setShortUrlSlug(data.slug)
             }
         } catch (error) {
             console.error(error)
@@ -45,17 +48,37 @@ export function ShortenForm() {
                         required
                     />
                 </div>
-                <Button disabled={loading} type="submit">
-                    {loading ? 'Shortening...' : 'Shorten URL'}
-                </Button>
+                <ActionScale>
+                    <Button disabled={loading} type="submit" className="w-full">
+                        {loading ? 'Shortening...' : 'Shorten URL'}
+                    </Button>
+                </ActionScale>
             </form>
 
-            {shortUrl && (
-                <div className="mt-4 p-4 bg-green-50 text-green-700 rounded-md break-all">
-                    <p className="text-sm font-semibold">Success!</p>
-                    <a href={shortUrl} target="_blank" className="underline">{shortUrl}</a>
-                </div>
-            )}
+            <AnimatePresence>
+                {shortUrlSlug && (
+                    <motion.div
+                        // 初始：变小(0.8倍)，透明，向下位移
+                        initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                        // 进场：恢复原状
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        // 离场：变小消失
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        // 弹性配置：type: "spring" 会有那种 Q 弹的感觉
+                        transition={{ type: "spring", stiffness: 200, damping: 20 }}
+
+                        className="mt-6 p-4 bg-green-50 border border-green-200 text-green-800 rounded-md flex items-center justify-between"
+                    >
+                        <div className="flex flex-col">
+                            <span className="text-xs text-green-600 uppercase font-bold">Success!</span>
+                            <span className="font-medium text-sm">
+                                {window.location.origin}/{shortUrlSlug}
+                            </span>
+                        </div>
+                        <CopyButton slug={shortUrlSlug} />
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     )
 }
