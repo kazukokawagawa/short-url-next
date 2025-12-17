@@ -28,19 +28,37 @@ export function CreateLinkDialog() {
         e.preventDefault()
         setLoading(true)
 
+        // 1. 🚀 启动 Loading 状态
+        // 我们把 ID 存下来，稍后用来更新它
+        const toastId = toast.loading("创建链接中...", {
+            description: "正在检查 URL 可用性和安全性..."
+        })
+
         const formData = new FormData(e.currentTarget)
-        const result = await createLink(formData)
 
-        setLoading(false)
+        try {
+            const result = await createLink(formData)
+            setLoading(false)
 
-        if (result?.error) {
-            toast.error("无法创建链接", {
-                description: result.error,
-            })
-        } else {
-            setOpen(false)
-            toast.success("链接创建成功!", {
-                description: "短链接已准备就绪，可以分享了。",
+            if (result?.error) {
+                // ❌ 失败：把那个转圈的框变成红色的错误框
+                toast.error("无法创建链接", {
+                    id: toastId, // 关键：指定同一个 ID
+                    description: result.error,
+                })
+            } else {
+                // ✅ 成功：把那个转圈的框变成绿色的成功框
+                toast.success("链接创建成功!", {
+                    id: toastId, // 关键：指定同一个 ID
+                    description: "短链接已准备就绪，可以分享了。",
+                })
+                setOpen(false)
+            }
+        } catch (error) {
+            setLoading(false)
+            toast.error("网络错误", {
+                id: toastId,
+                description: "有一些东西坏了，过会再试试吧。"
             })
         }
     }
