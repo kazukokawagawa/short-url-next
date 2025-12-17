@@ -3,6 +3,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ShortenForm } from "./shorten-form" // *注意：我们将之前的 Client 端表单拆分出去
+import { ActionScale } from "@/components/action-scale"
 
 // 1. 我们先把之前的 Client 端表单代码拆成一个单独的组件
 //    因为 page.tsx 即将变成 async server component，不能直接用 useState
@@ -24,7 +25,9 @@ export default async function Home() {
               {user.email}
             </span>
             <Link href="/dashboard">
-              <Button>控制台</Button>
+              <ActionScale>
+                <Button>控制台</Button>
+              </ActionScale>
             </Link>
           </div>
         ) : (

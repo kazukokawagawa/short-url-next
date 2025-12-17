@@ -41,3 +41,24 @@ export async function signOut() {
     await supabase.auth.signOut()
     return redirect('/login')
 }
+
+// 3. 删除链接 Action
+export async function deleteLink(id: number) {
+    const supabase = await createClient()
+
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return redirect('/login')
+
+    const { error } = await supabase
+        .from('links')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', user.id)
+
+    if (error) {
+        return { error: error.message }
+    }
+
+    revalidatePath('/dashboard')
+    return { success: true }
+}

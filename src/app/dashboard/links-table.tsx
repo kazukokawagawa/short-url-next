@@ -11,9 +11,8 @@ import {
 import { formatDistanceToNow } from 'date-fns'
 import { CopyButton } from "@/components/copy-button"
 import { motion, AnimatePresence } from "framer-motion"
-
-// 将 shadcn 的 TableRow 转换为 motion 组件
-const MotionRow = motion(TableRow)
+import { DeleteLinkDialog } from "./delete-link-dialog"
+import { cn } from "@/lib/utils"
 
 export function LinksTable({ links }: { links: any[] }) {
     if (!links?.length) {
@@ -36,8 +35,11 @@ export function LinksTable({ links }: { links: any[] }) {
                 <TableBody>
                     <AnimatePresence>
                         {links.map((link, index) => (
-                            <MotionRow
+                            <motion.tr
                                 key={link.id}
+                                className={cn(
+                                    "hover:bg-muted/50 data-[state=selected]:bg-muted border-b transition-colors"
+                                )}
                                 // 初始状态：透明，向下偏移 20px
                                 initial={{ opacity: 0, y: 20 }}
                                 // 动画结束状态：完全显示，回正
@@ -62,9 +64,12 @@ export function LinksTable({ links }: { links: any[] }) {
                                 </TableCell>
                                 <TableCell className="text-right">{link.clicks}</TableCell>
                                 <TableCell>
-                                    <CopyButton slug={link.slug} />
+                                    <div className="flex items-center gap-1">
+                                        <CopyButton slug={link.slug} />
+                                        <DeleteLinkDialog id={link.id} />
+                                    </div>
                                 </TableCell>
-                            </MotionRow>
+                            </motion.tr>
                         ))}
                     </AnimatePresence>
                 </TableBody>

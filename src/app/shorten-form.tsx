@@ -50,7 +50,7 @@ export function ShortenForm() {
                 </div>
                 <ActionScale>
                     <Button disabled={loading} type="submit" className="w-full">
-                        {loading ? 'Shortening...' : '生成短链接'}
+                        {loading ? '正在生成...' : '生成短链接'}
                     </Button>
                 </ActionScale>
             </form>
@@ -70,7 +70,7 @@ export function ShortenForm() {
                         className="mt-6 p-4 bg-green-50 border border-green-200 text-green-800 rounded-md flex items-center justify-between"
                     >
                         <div className="flex flex-col">
-                            <span className="text-xs text-green-600 uppercase font-bold">Success!</span>
+                            <span className="text-xs text-green-600 uppercase font-bold">完成!</span>
                             <span className="font-medium text-sm">
                                 {window.location.origin}/{shortUrlSlug}
                             </span>

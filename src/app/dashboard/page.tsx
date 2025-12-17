@@ -5,6 +5,8 @@ import { signOut } from "./actions"
 import { Button } from "@/components/ui/button"
 import { CreateLinkDialog } from "./create-link-dialog"
 
+import { ActionScale } from "@/components/action-scale"
+
 export default async function Dashboard() {
     const supabase = await createClient()
 
@@ -33,7 +35,9 @@ export default async function Dashboard() {
 
                     {/* 登出按钮 (放在 form 里以触发表单提交) */}
                     <form action={signOut}>
-                        <Button variant="outline">登出</Button>
+                        <ActionScale>
+                            <Button variant="outline">登出</Button>
+                        </ActionScale>
                     </form>
                 </div>
             </div>

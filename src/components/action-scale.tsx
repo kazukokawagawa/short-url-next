@@ -1,16 +1,25 @@
 'use client'
 
-import { motion } from "framer-motion"
-import { ReactNode } from "react"
+import { motion, HTMLMotionProps } from "framer-motion"
+import { forwardRef, ReactNode } from "react"
 
-export function ActionScale({ children }: { children: ReactNode }) {
-    return (
-        <motion.div
-            whileHover={{ scale: 1.05 }} // 鼠标悬停放大一点点
-            whileTap={{ scale: 0.95 }}   // 鼠标按下去缩小一点点（更有点击感）
-            className="inline-block"     // 保持内联布局
-        >
-            {children}
-        </motion.div>
-    )
+interface ActionScaleProps extends HTMLMotionProps<"div"> {
+    children: ReactNode
 }
+
+export const ActionScale = forwardRef<HTMLDivElement, ActionScaleProps>(
+    ({ children, ...props }, ref) => {
+        return (
+            <motion.div
+                ref={ref}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="inline-block"
+                {...props}
+            >
+                {children}
+            </motion.div>
+        )
+    }
+)
+ActionScale.displayName = "ActionScale"

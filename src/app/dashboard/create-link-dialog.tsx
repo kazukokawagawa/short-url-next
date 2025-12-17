@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { createLink } from "./actions"
 import { toast } from "sonner"
+import { ActionScale } from "@/components/action-scale"
 
 export function CreateLinkDialog() {
     const [open, setOpen] = useState(false)
@@ -38,7 +39,9 @@ export function CreateLinkDialog() {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button>创建新的链接</Button>
+                <ActionScale>
+                    <Button>创建新的链接</Button>
+                </ActionScale>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
@@ -73,7 +76,9 @@ export function CreateLinkDialog() {
                         />
                     </div>
                     <DialogFooter>
-                        <Button type="submit">保存更改</Button>
+                        <ActionScale>
+                            <Button type="submit">保存更改</Button>
+                        </ActionScale>
                     </DialogFooter>
                 </form>
             </DialogContent>

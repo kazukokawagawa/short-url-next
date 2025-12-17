@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase' // 确保这里引入的是你配置好的 supabase client
 
 export async function GET(
     request: NextRequest,
-    props: { params: Promise<{ slug: string }> }
+    { params }: { params: Promise<{ slug: string }> }
 ) {
-    const params = await props.params;
-    const slug = params.slug
+    const { slug } = await params
 
-    // 1. 查询数据库
+    // 1. 查询长链接
     const { data } = await supabase
         .from('links')
         .select('original_url')
@@ -16,15 +15,20 @@ export async function GET(
         .single()
 
     if (data?.original_url) {
-        // 2. (可选) 异步增加点击计数，不阻塞跳转
-        // 注意：在 Serverless 环境下，不await可能会被过早杀掉进程，
-        // 生产环境建议使用 Next.js 的 waitUntil 或者队列，这里简化处理。
-        await supabase.rpc('increment_clicks', { row_slug: slug }) // 需要在数据库写个RPC函数，或者简单用update
+        // 2. ⚡️ 核心修改：调用刚才创建的 RPC 函数
+        // 这里的 'increment_clicks' 对应数据库函数名
+        // 这里的 'slug_param' 对应数据库函数的参数名
 
-        // 3. 307 临时重定向 或 301 永久重定向
+        // 注意：不要 await 它！让它在后台跑，以免拖慢跳转速度
+        // (在 Serverless 环境下，为了稳妥可以用 waitUntil，但这里先简单处理)
+        supabase.rpc('increment_clicks', { slug_param: slug }).then(({ error }) => {
+            if (error) console.error('Error incrementing clicks:', error)
+        })
+
+        // 3. 跳转
         return NextResponse.redirect(data.original_url)
     }
 
-    // 4. 没找到则跳转回首页或404
+    // 4. 没找到链接，跳回首页
     return NextResponse.redirect(new URL('/', request.url))
 }
