@@ -1,7 +1,5 @@
 'use client'
 
-import { deleteLink } from "./actions"
-import { Button } from "@/components/ui/button"
 import {
     Table,
     TableBody,
@@ -10,39 +8,44 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
+// import { Button } from "@/components/ui/button"
+import { formatDistanceToNow } from 'date-fns'
 
-export function LinksTable({ data }: { data: any[] }) {
+export function LinksTable({ links }: { links: any[] }) {
+    if (!links || links.length === 0) {
+        return <div className="text-center py-10 text-gray-500">No links created yet.</div>
+    }
+
     return (
-        <Table>
-            <TableHeader>
-                <TableRow>
-                    <TableHead>Short URL</TableHead>
-                    <TableHead>Original URL</TableHead>
-                    <TableHead>Clicks</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                {data.map((link) => (
-                    <TableRow key={link.id}>
-                        <TableCell className="font-medium">{link.slug}</TableCell>
-                        <TableCell className="truncate max-w-[200px]">{link.original_url}</TableCell>
-                        <TableCell>{link.clicks}</TableCell>
-                        <TableCell className="text-right">
-                            <Button
-                                variant="destructive"
-                                size="sm"
-                                onClick={async () => {
-                                    // 调用 Server Action 删除
-                                    await deleteLink(link.id)
-                                }}
-                            >
-                                Delete
-                            </Button>
-                        </TableCell>
+        <div className="rounded-md border">
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead>Short Link</TableHead>
+                        <TableHead>Original URL</TableHead>
+                        <TableHead>Created</TableHead>
+                        <TableHead className="text-right">Clicks</TableHead>
                     </TableRow>
-                ))}
-            </TableBody>
-        </Table>
+                </TableHeader>
+                <TableBody>
+                    {links.map((link) => (
+                        <TableRow key={link.id}>
+                            <TableCell className="font-medium text-blue-600">
+                                <a href={`/${link.slug}`} target="_blank">
+                                    /{link.slug}
+                                </a>
+                            </TableCell>
+                            <TableCell className="max-w-[300px] truncate" title={link.original_url}>
+                                {link.original_url}
+                            </TableCell>
+                            <TableCell>
+                                {formatDistanceToNow(new Date(link.created_at), { addSuffix: true })}
+                            </TableCell>
+                            <TableCell className="text-right">{link.clicks}</TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </div>
     )
 }
