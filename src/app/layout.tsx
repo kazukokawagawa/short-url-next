@@ -5,6 +5,8 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { SiteFooter } from "@/components/site-footer";
+import { VerificationToast } from "@/components/verification-toast";
+import React from "react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -62,6 +64,9 @@ export default function RootLayout({
           {children}
           <SiteFooter />
           <Toaster />
+          <React.Suspense fallback={null}>
+            <VerificationToast />
+          </React.Suspense>
         </ThemeProvider>
       </body>
     </html>

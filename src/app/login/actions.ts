@@ -1,6 +1,7 @@
 'use server'
 
 import { revalidatePath } from "next/cache"
+import { headers } from "next/headers"
 import { createClient } from "@/utils/supabase/server"
 import { getFriendlyErrorMessage } from "@/utils/error-mapping" // 1. 引入
 
@@ -28,11 +29,13 @@ export async function signup(formData: FormData) {
     const email = formData.get('email') as string
     const password = formData.get('password') as string
 
+    const origin = (await headers()).get("origin")
+
     const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-            emailRedirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/callback`,
+            emailRedirectTo: `${origin}/auth/callback`,
         },
     })
 

@@ -90,21 +90,23 @@ export default function LoginPage(props: {
         }
 
         setIsSigningUp(true)
+        const toastId = toast.loading("正在发送验证邮件...")
 
         try {
             const res = await signup(formData)
 
             if (res?.error) {
-                toast.error("注册失败", { description: res.error })
+                toast.error("注册失败", { description: res.error, id: toastId })
             } else if (res?.success) {
                 // 邮件发送提示
                 toast.success("验证邮件已发送！", {
                     description: "请前往邮箱查收链接以完成注册。",
-                    duration: 5000 // 让它多显示一会儿
+                    duration: 5000, // 让它多显示一会儿
+                    id: toastId
                 })
             }
         } catch (e) {
-            toast.error("发生错误")
+            toast.error("发生错误", { id: toastId })
         } finally {
             setIsSigningUp(false) // 注册无论成功失败，都恢复按钮状态
         }

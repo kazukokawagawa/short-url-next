@@ -118,6 +118,21 @@ $$;
 
 - 如果开启，请确保注册后去邮箱查收确认信。
 
+### 4. 配置 URL Configuration
+
+Supabase 为了安全，只允许重定向到白名单内的域名。
+
+修改 Site URL：
+
+- 将其改为你的生产域名：https://你的域名.com
+
+检查 Redirect URLs：
+
+- 确保列表中包含你的回调地址：https://你的域名.com/auth/callback
+
+建议：你可以保留 http://localhost:3000/** 以便本地开发测试。
+
+点击 Save。
 ## 📦 部署指南 (Vercel)
 
 1. **推送到 GitHub**: 将你的代码提交到 GitHub 仓库。
@@ -133,8 +148,6 @@ $$;
 - `NEXT_PUBLIC_SUPABASE_URL`: (同本地)
 
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: (同本地)
-
-- `NEXT_PUBLIC_BASE_URL`: 注意，这里填写你生产环境的域名，例如 `https://your-project.vercel.app` (不要带末尾斜杠)。
 
 4. **点击 Deploy**: 等待构建完成即可。
 
