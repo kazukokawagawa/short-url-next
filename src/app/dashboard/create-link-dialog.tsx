@@ -149,6 +149,8 @@ export function CreateLinkDialog() {
                                 className={cn("pl-9", errors.url && "border-red-500 focus-visible:ring-red-500")}
                                 // ✨ 关键交互：获取焦点时展开下方
                                 onFocus={() => setShowCustomOption(true)}
+                                autoComplete="off"
+                                data-1p-ignore
                             />
                         </div>
                         {errors.url && (
@@ -236,6 +238,8 @@ export function CreateLinkDialog() {
                                                 value={slug}
                                                 onChange={(e) => setSlug(e.target.value)}
                                                 className={cn("pl-9 transition-colors", slug && "border-purple-200 focus-visible:ring-purple-500/20 bg-purple-50/30")}
+                                                autoComplete="off"
+                                                data-1p-ignore
                                             />
                                         </div>
                                         <p className="text-[10px] text-muted-foreground pl-1">
