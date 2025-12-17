@@ -3,8 +3,9 @@ import { supabase } from '@/lib/supabase'
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: { slug: string } }
+    props: { params: Promise<{ slug: string }> }
 ) {
+    const params = await props.params;
     const slug = params.slug
 
     // 1. 查询数据库

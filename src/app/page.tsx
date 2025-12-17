@@ -34,7 +34,7 @@ export default function Home() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-24 bg-slate-50">
+    <main className="flex min-h-screen flex-col items-center justify-center p-24 bg-gradient-to-br from-indigo-50 via-white to-cyan-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
       <Card className="w-[400px]">
         <CardHeader>
           <CardTitle>Short Link Generator</CardTitle>
