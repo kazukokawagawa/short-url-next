@@ -28,8 +28,8 @@ export function CreateLinkDialog({ onSuccess }: { onSuccess?: () => void }) {
     // 状态管理
     const [url, setUrl] = useState('')
     const [slug, setSlug] = useState('')
-    const [isNoIndex, setIsNoIndex] = useState(true)
     const [showCustomOption, setShowCustomOption] = useState(false)
+    const [placeholderSlug, setPlaceholderSlug] = useState('')
 
     const [showSessionExpired, setShowSessionExpired] = useState(false)
     const [isButtonHovered, setIsButtonHovered] = useState(false)
@@ -51,6 +51,12 @@ export function CreateLinkDialog({ onSuccess }: { onSuccess?: () => void }) {
 
         setLoading(true)
         const toastId = toastMessages.linkCreating()
+
+        // 如果用户没有输入 slug，使用 placeholder
+        const finalSlug = slugToCheck || placeholderSlug
+        if (finalSlug && !slugToCheck) {
+            formData.set('slug', finalSlug)
+        }
 
         try {
             const result = await createLink(formData)
@@ -80,12 +86,15 @@ export function CreateLinkDialog({ onSuccess }: { onSuccess?: () => void }) {
                 }
             } else {
                 toastMessages.linkCreateSuccess(toastId)
-                setOpen(false)
-                handleOpenChange(false) // 彻底重置
-                // 调用刷新回调而不是整页刷新
+
+                // 先调用刷新回调
                 if (onSuccess) {
                     onSuccess()
                 }
+
+                // 再关闭对话框
+                setOpen(false)
+                handleOpenChange(false) // 彻底重置
             }
         } catch (error) {
             setLoading(false)
@@ -99,7 +108,6 @@ export function CreateLinkDialog({ onSuccess }: { onSuccess?: () => void }) {
             setShowCustomOption(false)
             setSlug('')
             setUrl('')
-            setIsNoIndex(true)
         }
     }
 
@@ -127,10 +135,10 @@ export function CreateLinkDialog({ onSuccess }: { onSuccess?: () => void }) {
                         setUrl={setUrl}
                         slug={slug}
                         setSlug={setSlug}
-                        isNoIndex={isNoIndex}
-                        setIsNoIndex={setIsNoIndex}
                         showCustomOption={showCustomOption}
                         setShowCustomOption={setShowCustomOption}
+                        placeholderSlug={placeholderSlug}
+                        setPlaceholderSlug={setPlaceholderSlug}
                     />
 
                     <DialogFooter>

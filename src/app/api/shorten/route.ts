@@ -3,7 +3,7 @@ import { createClient } from '@/utils/supabase/server'
 import { nanoid } from 'nanoid'
 
 export async function POST(request: Request) {
-    const { url, slug, isNoIndex } = await request.json()
+    const { url, slug } = await request.json()
     const supabase = await createClient()
 
     // 1. 检查登录状态
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
             signal: controller.signal,
             redirect: 'follow', // 跟随重定向
             headers: {
-                'User-Agent': 'LinkFlow URL Checker'
+                'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/534.16 (KHTML, like Gecko) Chrome/10.0.648.133 Safari/534.16'
             }
         })
 
@@ -88,8 +88,7 @@ export async function POST(request: Request) {
             original_url: url,
             slug: finalSlug,
             user_id: user.id,
-            user_email: user.email, // 新增：保存用户邮箱
-            is_no_index: isNoIndex !== undefined ? isNoIndex : true // 默认为 true
+            user_email: user.email
         }])
         .select()
         .single()

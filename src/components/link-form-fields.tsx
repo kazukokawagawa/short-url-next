@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { nanoid } from 'nanoid'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from "@/components/ui/switch"
@@ -8,25 +9,15 @@ import { Link2, Wand2, ShieldCheck, Globe, Sparkles } from 'lucide-react'
 import { motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/lib/utils"
 
-// 提取工具函数
-function generateRandomString(length = 6) {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let result = '';
-    for (let i = 0; i < length; i++) {
-        result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return result;
-}
-
 interface LinkFormFieldsProps {
     url: string
     setUrl: (value: string) => void
     slug: string
     setSlug: (value: string) => void
-    isNoIndex: boolean
-    setIsNoIndex: (value: boolean) => void
     showCustomOption: boolean
     setShowCustomOption: (value: boolean) => void
+    placeholderSlug?: string
+    setPlaceholderSlug?: (value: string) => void
 }
 
 export function LinkFormFields({
@@ -34,20 +25,26 @@ export function LinkFormFields({
     setUrl,
     slug,
     setSlug,
-    isNoIndex,
-    setIsNoIndex,
     showCustomOption,
-    setShowCustomOption
+    setShowCustomOption,
+    placeholderSlug: externalPlaceholderSlug,
+    setPlaceholderSlug: externalSetPlaceholderSlug
 }: LinkFormFieldsProps) {
     // 内部状态：用于预览的 Host 和随机占位符
     const [host, setHost] = useState('')
-    const [placeholderSlug, setPlaceholderSlug] = useState('...')
+    const [internalPlaceholderSlug, setInternalPlaceholderSlug] = useState('')
+
+    // 使用外部状态或内部状态
+    const placeholderSlug = externalPlaceholderSlug ?? internalPlaceholderSlug
+    const setPlaceholderSlug = externalSetPlaceholderSlug ?? setInternalPlaceholderSlug
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
             setHost(window.location.host)
         }
-        setPlaceholderSlug(generateRandomString(6))
+        // 生成一个随机 slug 作为 placeholder
+        const generated = nanoid(6)
+        setPlaceholderSlug(generated)
     }, [])
 
     return (
@@ -61,7 +58,7 @@ export function LinkFormFields({
                         id="url"
                         name="url" // 方便 FormData 获取
                         type="url"
-                        placeholder="https://example.com/very/long/path..."
+                        placeholder="https://very-long-url.com/..."
                         value={url}
                         onChange={(e) => setUrl(e.target.value)}
                         className="pl-9"
@@ -125,10 +122,8 @@ export function LinkFormFields({
                                     <div className="flex-1 min-w-0 bg-background border border-border rounded px-2 h-8 flex items-center shadow-sm">
                                         <p className="truncate text-sm font-medium text-foreground w-full">
                                             <span className="text-muted-foreground mr-0.5">{host || '...'} /</span>
-                                            <span className={slug ? "text-purple-500 font-bold bg-purple-500/10 px-1 rounded" : "text-primary"}>
-                                                {slug || (
-                                                    <span className="text-muted-foreground/50 italic font-normal">{placeholderSlug}</span>
-                                                )}
+                                            <span className={slug ? "text-purple-500 font-bold bg-purple-500/10 px-1 rounded" : "text-muted-foreground/50 italic font-normal"}>
+                                                {slug || placeholderSlug || '...'}
                                             </span>
                                         </p>
                                     </div>
@@ -147,7 +142,7 @@ export function LinkFormFields({
                                     <Input
                                         id="slug"
                                         name="slug" // 方便 FormData 获取
-                                        placeholder="my-custom-name"
+                                        placeholder={placeholderSlug || "my-custom-name"}
                                         value={slug}
                                         onChange={(e) => setSlug(e.target.value)}
                                         className={cn("pl-9 transition-colors", slug && "border-purple-200 focus-visible:ring-purple-500/20 bg-purple-50/30")}
@@ -157,26 +152,6 @@ export function LinkFormFields({
                                         title="只允许字母、数字、连字符和下划线"
                                     />
                                 </div>
-                            </div>
-
-                            {/* --- 防索引开关 --- */}
-                            <div className="flex flex-row items-center justify-between rounded-lg border border-border/50 bg-muted/20 p-3 shadow-sm transition-colors hover:bg-muted/30">
-                                <div className="space-y-0.5">
-                                    <Label className="text-sm font-medium flex items-center gap-2">
-                                        <ShieldCheck className={cn("h-4 w-4", isNoIndex ? "text-green-500" : "text-muted-foreground")} />
-                                        屏蔽搜索引擎
-                                    </Label>
-                                    <p className="text-[10px] text-muted-foreground">
-                                        防止短链接被 Google/Bing 收录
-                                    </p>
-                                </div>
-                                <Switch
-                                    checked={isNoIndex}
-                                    onCheckedChange={setIsNoIndex}
-                                    className="data-[state=checked]:bg-green-500"
-                                />
-                                {/* 隐藏域：为了让 Server Actions 的 FormData 能拿到这个值 */}
-                                <input type="hidden" name="isNoIndex" value={String(isNoIndex)} />
                             </div>
 
                         </div>

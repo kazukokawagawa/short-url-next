@@ -1,6 +1,8 @@
 'use client'
 
+import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { motion } from "framer-motion"
 import {
     AlertDialog,
     AlertDialogAction,
@@ -19,6 +21,7 @@ export function SessionExpiredDialog({
     onOpenChange: (open: boolean) => void
 }) {
     const router = useRouter()
+    const [isHovered, setIsHovered] = useState(false)
 
     return (
         <AlertDialog open={open} onOpenChange={onOpenChange}>
@@ -30,12 +33,35 @@ export function SessionExpiredDialog({
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    {/* 只有一个确认按钮，点击后跳转登录页 */}
+                    {/* 带动画的登录按钮 */}
                     <AlertDialogAction
                         onClick={() => router.push('/login')}
-                        className="bg-blue-600 hover:bg-blue-700"
+                        onMouseEnter={() => setIsHovered(true)}
+                        onMouseLeave={() => setIsHovered(false)}
+                        className="relative overflow-hidden"
                     >
-                        去登录
+                        <motion.span
+                            initial={false}
+                            animate={{
+                                opacity: isHovered ? 0 : 1,
+                                x: isHovered ? -10 : 0
+                            }}
+                            transition={{ duration: 0.2 }}
+                            className="inline-block"
+                        >
+                            去登录
+                        </motion.span>
+                        <motion.span
+                            initial={false}
+                            animate={{
+                                opacity: isHovered ? 1 : 0,
+                                x: isHovered ? 0 : 10
+                            }}
+                            transition={{ duration: 0.2 }}
+                            className="absolute inset-0 flex items-center justify-center"
+                        >
+                            →
+                        </motion.span>
                     </AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>

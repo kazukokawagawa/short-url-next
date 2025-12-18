@@ -42,7 +42,7 @@ export function LinksTable({ links, isAdmin = false, onDeleteSuccess }: { links:
                         </EmptyDescription>
                     </EmptyHeader>
                     <EmptyContent>
-                        <CreateLinkDialog />
+                        <CreateLinkDialog onSuccess={onDeleteSuccess} />
                     </EmptyContent>
                 </Empty>
             </div>

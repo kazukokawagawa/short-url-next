@@ -19,8 +19,8 @@ export function ShortenForm({ user }: { user: User | null }) {
     // 状态管理
     const [url, setUrl] = useState('')
     const [slug, setSlug] = useState('')
-    const [isNoIndex, setIsNoIndex] = useState(true)
     const [showCustomOption, setShowCustomOption] = useState(false)
+    const [placeholderSlug, setPlaceholderSlug] = useState('')
 
     // 结果与加载状态
     const [shortUrlSlug, setShortUrlSlug] = useState('')
@@ -87,11 +87,14 @@ export function ShortenForm({ user }: { user: User | null }) {
 
         const toastId = toastMessages.linkCreating()
 
+        // 如果用户没有输入 slug，使用 placeholder
+        const finalSlug = slug || placeholderSlug
+
         try {
             const res = await fetch('/api/shorten', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ url, slug, isNoIndex }),
+                body: JSON.stringify({ url, slug: finalSlug }),
             })
             const data = await res.json()
 
@@ -100,7 +103,6 @@ export function ShortenForm({ user }: { user: User | null }) {
                 // 重置表单
                 setUrl('')
                 setSlug('')
-                setIsNoIndex(true)
                 setShowCustomOption(false)
                 toastMessages.linkCreateSuccess(toastId)
             } else {
@@ -136,10 +138,10 @@ export function ShortenForm({ user }: { user: User | null }) {
                     setUrl={setUrl}
                     slug={slug}
                     setSlug={setSlug}
-                    isNoIndex={isNoIndex}
-                    setIsNoIndex={setIsNoIndex}
                     showCustomOption={showCustomOption}
                     setShowCustomOption={setShowCustomOption}
+                    placeholderSlug={placeholderSlug}
+                    setPlaceholderSlug={setPlaceholderSlug}
                 />
 
                 <Button
