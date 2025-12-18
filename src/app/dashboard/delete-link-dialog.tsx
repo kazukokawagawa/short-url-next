@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { deleteLink } from "./actions"
+import { adminDeleteLink } from "@/app/admin/actions"
 import { toast } from "sonner"
 import { Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -21,7 +22,7 @@ import {
 import { ActionScale } from "@/components/action-scale"
 import { SessionExpiredDialog } from "@/components/session-expired-dialog"
 
-export function DeleteLinkDialog({ id, onSuccess }: { id: number, onSuccess?: () => void }) {
+export function DeleteLinkDialog({ id, onSuccess, isAdmin = false }: { id: number, onSuccess?: () => void, isAdmin?: boolean }) {
     const [open, setOpen] = useState(false)
 
     const [isDeleting, setIsDeleting] = useState(false)
@@ -31,8 +32,8 @@ export function DeleteLinkDialog({ id, onSuccess }: { id: number, onSuccess?: ()
     const handleDelete = async () => {
         setIsDeleting(true)
 
-        // 调用 Server Action
-        const result = await deleteLink(id)
+        // 根据 isAdmin 参数选择调用不同的 action
+        const result = isAdmin ? await adminDeleteLink(id) : await deleteLink(id)
 
         // 2. 检查标记
         if (result?.needsLogin) {

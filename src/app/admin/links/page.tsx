@@ -16,39 +16,40 @@ export default function AdminLinksPage() {
     const [loading, setLoading] = useState(true)
     const router = useRouter()
 
-    useEffect(() => {
-        async function loadData() {
-            const supabase = createClient()
+    const refreshLinks = async () => {
+        const supabase = createClient()
 
-            // 1. 权限校验
-            const { data: { user } } = await supabase.auth.getUser()
-            if (!user) {
-                router.push("/login")
-                return
-            }
-
-            const { data: profile } = await supabase
-                .from('profiles')
-                .select('role')
-                .eq('id', user.id)
-                .single()
-
-            if (profile?.role !== 'admin') {
-                router.push("/dashboard")
-                return
-            }
-
-            // 2. 获取所有链接数据
-            // 修改点：去掉了 profiles(email)，只用 * 即可获取包括 user_email 在内的所有字段
-            const { data: allLinks } = await supabase
-                .from('links')
-                .select('*')
-                .order('created_at', { ascending: false })
-
-            setLinks(allLinks || [])
-            setLoading(false)
+        // 1. 权限校验
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) {
+            router.push("/login")
+            return
         }
-        loadData()
+
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single()
+
+        if (profile?.role !== 'admin') {
+            router.push("/dashboard")
+            return
+        }
+
+        // 2. 获取所有链接数据
+        // 修改点：去掉了 profiles(email)，只用 * 即可获取包括 user_email 在内的所有字段
+        const { data: allLinks } = await supabase
+            .from('links')
+            .select('*')
+            .order('created_at', { ascending: false })
+
+        setLinks(allLinks || [])
+        setLoading(false)
+    }
+
+    useEffect(() => {
+        refreshLinks()
     }, [router])
 
     if (loading) {
@@ -82,7 +83,7 @@ export default function AdminLinksPage() {
                 </FadeIn>
             </div>
 
-            <LinksTable links={links} isAdmin={true} />
+            <LinksTable links={links} isAdmin={true} onDeleteSuccess={refreshLinks} />
         </div>
     )
 }

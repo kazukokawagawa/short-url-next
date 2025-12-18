@@ -131,7 +131,7 @@ export function LinksTable({ links, isAdmin = false, onDeleteSuccess }: { links:
                                         {/* 3. 优化操作区 */}
                                         <div className="flex items-center justify-end gap-2 opacity-70 group-hover:opacity-100 transition-opacity">
                                             <CopyButton slug={link.slug} />
-                                            <DeleteLinkDialog id={link.id} onSuccess={onDeleteSuccess} />
+                                            <DeleteLinkDialog id={link.id} onSuccess={onDeleteSuccess} isAdmin={isAdmin} />
                                         </div>
                                     </TableCell>
                                 </MotionRow>
