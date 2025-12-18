@@ -53,7 +53,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased font-sans`}
+        className={`${geistSans.variable} ${geistMono.variable} flex min-h-screen flex-col antialiased font-sans`}
       >
         <ThemeProvider
           attribute="class"
@@ -61,7 +61,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          {/* 核心修改：用 main 包裹 children 并添加 flex-1 */}
+          <main className="flex-1 w-full">
+            {children}
+          </main>
           <SiteFooter />
           <Toaster />
           <React.Suspense fallback={null}>
