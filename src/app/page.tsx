@@ -8,11 +8,12 @@ import { ShortenForm } from "./shorten-form"
 import { FadeIn } from "@/components/animations/fade-in"
 import { useEffect, useState } from "react"
 import { User } from "@supabase/supabase-js"
-import { LogIn, LayoutDashboard } from "lucide-react"
+import { TextArrowIcon } from "@/components/text-arrow-icon"
 
 export default function Home() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const [hoveredButton, setHoveredButton] = useState<'login' | 'dashboard' | null>(null)
 
   useEffect(() => {
     async function getUser() {
@@ -42,17 +43,26 @@ export default function Home() {
               </span>
               <Link href="/dashboard">
                 {/* 手机端按钮稍微小一点 */}
-                <Button size="sm" className="md:h-10 md:px-4 md:py-2 gap-2">
-                  <LayoutDashboard className="h-4 w-4" />
-                  控制台
+                <Button
+                  size="sm"
+                  className="md:h-10 md:px-4 md:py-2 gap-2"
+                  onMouseEnter={() => setHoveredButton('dashboard')}
+                  onMouseLeave={() => setHoveredButton(null)}
+                >
+                  <TextArrowIcon isHovered={hoveredButton === 'dashboard'} text="控制台" />
                 </Button>
               </Link>
             </div>
           ) : (
             <Link href="/login">
-              <Button variant="outline" size="sm" className="gap-2">
-                <LogIn className="h-4 w-4" />
-                登录
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2"
+                onMouseEnter={() => setHoveredButton('login')}
+                onMouseLeave={() => setHoveredButton(null)}
+              >
+                <TextArrowIcon isHovered={hoveredButton === 'login'} text="登录" />
               </Button>
             </Link>
           )}

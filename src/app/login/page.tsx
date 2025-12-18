@@ -11,10 +11,13 @@ import { motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner" // 引入 Toast
 import Link from "next/link"
-import { LoaderCircle, ChevronLeft } from "lucide-react" // 引入 Loading 图标 和 ChevronLeft
+import { LoaderCircle } from "lucide-react" // 引入 Loading 图标
 
 import { ActionScale } from "@/components/action-scale"
 import { FadeIn } from "@/components/animations/fade-in"
+import { TerminalArrowIcon } from "@/components/terminal-arrow-icon"
+import { MailSendIcon } from "@/components/mail-send-icon"
+import { HomeArrowLeftIcon } from "@/components/home-arrow-left-icon"
 
 export default function LoginPage(props: {
     searchParams: Promise<{ message: string }>
@@ -29,6 +32,7 @@ export default function LoginPage(props: {
     const [isSigningUp, setIsSigningUp] = useState(false)
     // 1. 新增：专门存放字段验证错误信息
     const [errors, setErrors] = useState<{ email?: string; password?: string }>({})
+    const [isBackButtonHovered, setIsBackButtonHovered] = useState(false)
 
     const initialDescription = "输入你的账户以登录控制台"
     const titles = { login: "欢迎回来", signup: "新的伙伴" }
@@ -119,8 +123,13 @@ export default function LoginPage(props: {
             <FadeIn delay={0} className="absolute top-4 left-4 md:top-8 md:left-8">
                 <Link href="/">
                     {/* variant="ghost" 让它没有背景色，看起来很干净 */}
-                    <Button variant="ghost" className="-ml-2 flex items-center gap-2 text-muted-foreground hover:text-foreground">
-                        <ChevronLeft className="h-4 w-4" />
+                    <Button
+                        variant="ghost"
+                        className="-ml-2 flex items-center gap-2 text-muted-foreground hover:text-foreground"
+                        onMouseEnter={() => setIsBackButtonHovered(true)}
+                        onMouseLeave={() => setIsBackButtonHovered(false)}
+                    >
+                        <HomeArrowLeftIcon isHovered={isBackButtonHovered} />
                         返回首页
                     </Button>
                 </Link>
@@ -236,7 +245,12 @@ export default function LoginPage(props: {
                                                 <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
                                                 登录中...
                                             </>
-                                        ) : "登录"}
+                                        ) : (
+                                            <>
+                                                <TerminalArrowIcon isHovered={hoverState === 'login'} />
+                                                登录
+                                            </>
+                                        )}
                                     </Button>
                                 </ActionScale>
 
@@ -258,7 +272,12 @@ export default function LoginPage(props: {
                                                 <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
                                                 注册中...
                                             </>
-                                        ) : "注册"}
+                                        ) : (
+                                            <>
+                                                <MailSendIcon isHovered={hoverState === 'signup'} />
+                                                注册
+                                            </>
+                                        )}
                                     </Button>
                                 </ActionScale>
                             </div>

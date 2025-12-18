@@ -5,10 +5,11 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { CopyButton } from '@/components/copy-button'
 import { toast } from "sonner"
-import { LoaderCircle, Link } from 'lucide-react'
+import { LoaderCircle } from 'lucide-react'
 import { motion, AnimatePresence } from "framer-motion"
 import { User } from '@supabase/supabase-js'
 import { LinkFormFields } from '@/components/link-form-fields' // 引入新组件
+import { LinkArrowIcon } from '@/components/link-arrow-icon'
 
 export function ShortenForm({ user }: { user: User | null }) {
     const router = useRouter()
@@ -23,6 +24,7 @@ export function ShortenForm({ user }: { user: User | null }) {
     const [shortUrlSlug, setShortUrlSlug] = useState('')
     const [loading, setLoading] = useState(false)
     const [errors, setErrors] = useState<{ url?: string }>({})
+    const [isButtonHovered, setIsButtonHovered] = useState(false)
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -88,7 +90,13 @@ export function ShortenForm({ user }: { user: User | null }) {
                     setShowCustomOption={setShowCustomOption}
                 />
 
-                <Button disabled={loading} type="submit" className="w-full gap-2">
+                <Button
+                    disabled={loading}
+                    type="submit"
+                    className="w-full gap-2"
+                    onMouseEnter={() => setIsButtonHovered(true)}
+                    onMouseLeave={() => setIsButtonHovered(false)}
+                >
                     {loading ? (
                         <>
                             <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
@@ -96,7 +104,7 @@ export function ShortenForm({ user }: { user: User | null }) {
                         </>
                     ) : (
                         <>
-                            <Link className="h-4 w-4" />
+                            <LinkArrowIcon isHovered={isButtonHovered} />
                             生成短链接
                         </>
                     )}

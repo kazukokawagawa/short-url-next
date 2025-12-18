@@ -18,8 +18,9 @@ import { ActionScale } from "@/components/action-scale"
 import { SessionExpiredDialog } from "@/components/session-expired-dialog"
 import { LinkFormFields } from '@/components/link-form-fields' // 引入新组件
 import { Plus } from "lucide-react"
+import { SaveCheckIcon } from "@/components/save-check-icon"
 
-export function CreateLinkDialog() {
+export function CreateLinkDialog({ onSuccess }: { onSuccess?: () => void }) {
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
 
@@ -31,6 +32,7 @@ export function CreateLinkDialog() {
 
     const [errors, setErrors] = useState<{ url?: string }>({})
     const [showSessionExpired, setShowSessionExpired] = useState(false)
+    const [isButtonHovered, setIsButtonHovered] = useState(false)
 
     async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault()
@@ -67,6 +69,10 @@ export function CreateLinkDialog() {
                 toast.success("链接创建成功!", { id: toastId, description: "短链接已准备就绪。" })
                 setOpen(false)
                 handleOpenChange(false) // 彻底重置
+                // 调用刷新回调而不是整页刷新
+                if (onSuccess) {
+                    onSuccess()
+                }
             }
         } catch (error) {
             setLoading(false)
@@ -117,8 +123,18 @@ export function CreateLinkDialog() {
                     />
 
                     <DialogFooter>
-                        <ActionScale>
-                            <LoadingButton loading={loading} type="submit" className="w-full">保存更改</LoadingButton>
+                        <ActionScale
+                            onMouseEnter={() => setIsButtonHovered(true)}
+                            onMouseLeave={() => setIsButtonHovered(false)}
+                        >
+                            <LoadingButton
+                                loading={loading}
+                                type="submit"
+                                className="w-full"
+                                icon={<SaveCheckIcon isHovered={isButtonHovered} />}
+                            >
+                                保存更改
+                            </LoadingButton>
                         </ActionScale>
                     </DialogFooter>
                 </form>

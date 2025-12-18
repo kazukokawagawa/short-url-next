@@ -85,12 +85,11 @@ export function LinksTable({ links }: { links: any[] }) {
                                     }}
                                     className="group hover:bg-muted/30 transition-colors"
                                 >
-                                    {/* 1. 优化 Short Link 显示 */}
                                     <TableCell className="py-4 pl-6 font-medium">
                                         <a
                                             href={`/${link.slug}`}
                                             target="_blank"
-                                            className="text-primary transition-colors hover:underline hover:text-primary/80 flex items-center gap-2"
+                                            className="text-primary transition-all rounded px-2 py-1 -ml-2 hover:bg-purple-500/10 hover:text-purple-500 flex items-center gap-2 w-fit"
                                         >
                                             <Link2 className="h-3.5 w-3.5 opacity-70" />
                                             <span className="truncate">
