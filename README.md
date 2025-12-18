@@ -73,6 +73,12 @@ create table public.links (
 alter table public.links 
 add column is_no_index boolean default true;
 
+create table public.profiles (
+  id uuid references auth.users on delete cascade not null primary key,
+  email text,
+  role text default 'user' check (role in ('user', 'admin'))
+);
+
 -- 开启行级安全策略 (RLS)
 alter table public.links enable row level security;
 
@@ -133,6 +139,17 @@ Supabase 为了安全，只允许重定向到白名单内的域名。
 建议：你可以保留 http://localhost:3000/** 以便本地开发测试。
 
 点击 Save。
+
+### 5. 给予自己邮箱管理员权限
+```SQL
+-- 将特定邮箱的用户提升为管理员
+UPDATE public.profiles
+SET role = 'admin'
+WHERE email = '你的邮箱地址@example.com';
+
+-- 开启 RLS
+alter table public.profiles enable row level security;
+```
 ## 📦 部署指南 (Vercel)
 
 1. **推送到 GitHub**: 将你的代码提交到 GitHub 仓库。

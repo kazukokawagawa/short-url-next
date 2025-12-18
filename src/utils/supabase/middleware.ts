@@ -64,5 +64,25 @@ export async function updateSession(request: NextRequest) {
         return NextResponse.redirect(new URL('/login', request.url))
     }
 
+    // 2. [新增] 管理员权限保护
+    if (request.nextUrl.pathname.startsWith('/admin')) {
+        // 如果没登录，去登录页
+        if (!user) {
+            return NextResponse.redirect(new URL('/login', request.url))
+        }
+
+        // 检查用户角色
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single()
+
+        // 如果不是 admin，踢回 dashboard
+        if (profile?.role !== 'admin') {
+            return NextResponse.redirect(new URL('/dashboard', request.url))
+        }
+    }
+
     return response
 }
