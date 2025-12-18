@@ -1,5 +1,7 @@
 'use client'
 
+import { validateUrl, validateSlug } from '@/lib/validation'
+
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
@@ -23,12 +25,10 @@ export function ShortenForm({ user }: { user: User | null }) {
     // 结果与加载状态
     const [shortUrlSlug, setShortUrlSlug] = useState('')
     const [loading, setLoading] = useState(false)
-    const [errors, setErrors] = useState<{ url?: string }>({})
     const [isButtonHovered, setIsButtonHovered] = useState(false)
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        setErrors({})
 
         if (!user) {
             // 创建自定义登录按钮内容组件（用 div 代替 button 避免嵌套）
@@ -78,13 +78,15 @@ export function ShortenForm({ user }: { user: User | null }) {
             return
         }
 
-        if (!url) {
-            setErrors({ url: "请输入需要缩短的 URL" })
+        // 验证 URL 和 Slug
+        if (!validateUrl(url) || !validateSlug(slug)) {
             return
         }
 
         setLoading(true)
         setShortUrlSlug('')
+
+        const toastId = toast.loading("创建链接中...", { description: "正在检查 URL 可用性和安全性..." })
 
         try {
             const res = await fetch('/api/shorten', {
@@ -101,13 +103,13 @@ export function ShortenForm({ user }: { user: User | null }) {
                 setSlug('')
                 setIsNoIndex(true)
                 setShowCustomOption(false)
-                toast.success("链接创建成功!")
+                toast.success("链接创建成功!", { id: toastId, description: "短链接已准备就绪。" })
             } else {
-                toast.error("错误", { description: data.error || "生成失败" })
+                toast.error("错误", { id: toastId, description: data.error || "生成失败" })
             }
         } catch (error) {
             console.error(error)
-            toast.error("网络错误")
+            toast.error("网络错误", { id: toastId })
         } finally {
             setLoading(false)
         }
@@ -115,7 +117,7 @@ export function ShortenForm({ user }: { user: User | null }) {
 
     return (
         <>
-            <form onSubmit={handleSubmit} className="grid w-full items-center gap-4">
+            <form onSubmit={handleSubmit} className="grid w-full items-center gap-4" noValidate>
 
                 {/* 核心字段组件 */}
                 <LinkFormFields
@@ -125,7 +127,6 @@ export function ShortenForm({ user }: { user: User | null }) {
                     setSlug={setSlug}
                     isNoIndex={isNoIndex}
                     setIsNoIndex={setIsNoIndex}
-                    errors={errors}
                     showCustomOption={showCustomOption}
                     setShowCustomOption={setShowCustomOption}
                 />
