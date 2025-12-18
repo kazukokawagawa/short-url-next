@@ -1,8 +1,7 @@
 'use client'
 
 import { createClient } from "@/utils/supabase/client"
-import { redirect, useRouter } from "next/navigation"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useRouter } from "next/navigation"
 import { Link2, Settings2, UserRoundCog, ArrowRight, ShieldCheck, LoaderCircle } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"

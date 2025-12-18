@@ -1,37 +1,72 @@
-import { createClient } from "@/utils/supabase/server"
-import { redirect } from "next/navigation"
+'use client'
+
+import { createClient } from "@/utils/supabase/client"
+import { useRouter } from "next/navigation"
 import { LinksTable } from "@/app/dashboard/links-table"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
+import { FadeIn } from "@/components/animations/fade-in"
+import { useEffect, useState } from "react"
+import { LoaderCircle } from "lucide-react"
+import { motion } from "framer-motion"
 
-export default async function AdminLinksPage() {
-    const supabase = await createClient()
+export default function AdminLinksPage() {
+    const [links, setLinks] = useState<any[]>([])
+    const [loading, setLoading] = useState(true)
+    const router = useRouter()
 
-    // 1. 权限校验
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return redirect("/login")
+    useEffect(() => {
+        async function loadData() {
+            const supabase = createClient()
 
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single()
+            // 1. 权限校验
+            const { data: { user } } = await supabase.auth.getUser()
+            if (!user) {
+                router.push("/login")
+                return
+            }
 
-    if (profile?.role !== 'admin') {
-        return redirect("/dashboard")
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('role')
+                .eq('id', user.id)
+                .single()
+
+            if (profile?.role !== 'admin') {
+                router.push("/dashboard")
+                return
+            }
+
+            // 2. 获取所有链接数据
+            const { data: allLinks } = await supabase
+                .from('links')
+                .select('*, profiles(email)')
+                .order('created_at', { ascending: false })
+
+            setLinks(allLinks || [])
+            setLoading(false)
+        }
+        loadData()
+    }, [router])
+
+    if (loading) {
+        return (
+            <div className="flex min-h-screen items-center justify-center">
+                <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                >
+                    <LoaderCircle className="h-8 w-8 text-muted-foreground opacity-50" />
+                </motion.div>
+            </div>
+        )
     }
-
-    // 2. 获取所有链接数据
-    const { data: allLinks } = await supabase
-        .from('links')
-        .select('*, profiles(email)')
-        .order('created_at', { ascending: false })
 
     return (
         <div className="container mx-auto max-w-6xl px-4 py-8">
             <div className="mb-8 flex flex-col items-start justify-between gap-4 border-b border-border/40 pb-6 md:flex-row md:items-center">
-                <div className="flex items-center gap-4">
+                <FadeIn delay={0} className="flex items-center gap-4">
                     <Link href="/admin">
                         <Button variant="ghost" size="icon">
                             <ArrowLeft className="h-5 w-5" />
@@ -43,10 +78,10 @@ export default async function AdminLinksPage() {
                             查看和管理系统内的所有短链接
                         </p>
                     </div>
-                </div>
+                </FadeIn>
             </div>
 
-            <LinksTable links={allLinks || []} />
+            <LinksTable links={links} />
         </div>
     )
 }

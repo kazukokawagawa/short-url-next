@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { CopyButton } from '@/components/copy-button'
 import { toast } from "sonner"
-import { Loader2 } from 'lucide-react'
+import { LoaderCircle, Link } from 'lucide-react'
 import { motion, AnimatePresence } from "framer-motion"
 import { User } from '@supabase/supabase-js'
 import { LinkFormFields } from '@/components/link-form-fields' // 引入新组件
@@ -88,13 +88,18 @@ export function ShortenForm({ user }: { user: User | null }) {
                     setShowCustomOption={setShowCustomOption}
                 />
 
-                <Button disabled={loading} type="submit" className="w-full">
+                <Button disabled={loading} type="submit" className="w-full gap-2">
                     {loading ? (
                         <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
                             生成中...
                         </>
-                    ) : '生成短链接'}
+                    ) : (
+                        <>
+                            <Link className="h-4 w-4" />
+                            生成短链接
+                        </>
+                    )}
                 </Button>
             </form>
 

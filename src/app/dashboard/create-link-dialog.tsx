@@ -17,6 +17,7 @@ import { toast } from "sonner"
 import { ActionScale } from "@/components/action-scale"
 import { SessionExpiredDialog } from "@/components/session-expired-dialog"
 import { LinkFormFields } from '@/components/link-form-fields' // 引入新组件
+import { Plus } from "lucide-react"
 
 export function CreateLinkDialog() {
     const [open, setOpen] = useState(false)
@@ -88,7 +89,10 @@ export function CreateLinkDialog() {
         <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogTrigger asChild>
                 <ActionScale>
-                    <Button>创建新的链接</Button>
+                    <Button className="gap-2">
+                        <Plus className="h-4 w-4" />
+                        创建新的链接
+                    </Button>
                 </ActionScale>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]" onOpenAutoFocus={(e) => e.preventDefault()}>
