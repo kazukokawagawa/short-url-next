@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { CopyButton } from '@/components/copy-button'
 import { toast } from "sonner"
-import { LoaderCircle } from 'lucide-react'
+import { LoaderCircle, KeyRound } from 'lucide-react'
 import { motion, AnimatePresence } from "framer-motion"
 import { User } from '@supabase/supabase-js'
 import { LinkFormFields } from '@/components/link-form-fields' // 引入新组件
@@ -31,9 +31,49 @@ export function ShortenForm({ user }: { user: User | null }) {
         setErrors({})
 
         if (!user) {
+            // 创建自定义登录按钮内容组件（用 div 代替 button 避免嵌套）
+            const LoginButtonContent = () => {
+                const [isHovered, setIsHovered] = useState(false)
+
+                return (
+                    <div
+                        className="relative inline-flex items-center justify-center w-12 h-full"
+                        onMouseEnter={() => setIsHovered(true)}
+                        onMouseLeave={() => setIsHovered(false)}
+                    >
+                        <motion.span
+                            initial={false}
+                            animate={{
+                                opacity: isHovered ? 0 : 1,
+                                x: isHovered ? -10 : 0
+                            }}
+                            transition={{ duration: 0.2 }}
+                            className="absolute"
+                        >
+                            登录
+                        </motion.span>
+                        <motion.span
+                            initial={false}
+                            animate={{
+                                opacity: isHovered ? 1 : 0,
+                                x: isHovered ? 0 : 10
+                            }}
+                            transition={{ duration: 0.2 }}
+                            className="absolute"
+                        >
+                            →
+                        </motion.span>
+                    </div>
+                )
+            }
+
             toast("需要登录", {
                 description: "你需要登录以创建短链接",
-                action: { label: "登录", onClick: () => router.push('/login') },
+                icon: <KeyRound className="h-5 w-5" />,
+                action: {
+                    label: <LoginButtonContent />,
+                    onClick: () => router.push('/login')
+                },
             })
             return
         }

@@ -9,8 +9,8 @@ import { format } from "date-fns"
 
 export function SiteFooter() {
     return (
-        <footer className="fixed bottom-4 left-0 right-0 w-full text-center text-xs text-muted-foreground z-50 pointer-events-none">
-            <div className="pointer-events-auto inline-block">
+        <footer className="w-full border-t bg-background py-6 text-center text-xs text-muted-foreground">
+            <div className="container mx-auto">
                 <p>
                     &copy; {new Date().getFullYear()} LinkFlow. All rights reserved.
                 </p>
