@@ -25,7 +25,6 @@ interface LinkFormFieldsProps {
     setSlug: (value: string) => void
     isNoIndex: boolean
     setIsNoIndex: (value: boolean) => void
-    errors: { url?: string }
     showCustomOption: boolean
     setShowCustomOption: (value: boolean) => void
 }
@@ -37,7 +36,6 @@ export function LinkFormFields({
     setSlug,
     isNoIndex,
     setIsNoIndex,
-    errors,
     showCustomOption,
     setShowCustomOption
 }: LinkFormFieldsProps) {
@@ -56,26 +54,22 @@ export function LinkFormFields({
         <div className="grid gap-4">
             {/* --- URL 输入框 --- */}
             <div className="flex flex-col space-y-1.5 relative">
-                <Label htmlFor="url" className={errors.url ? "text-red-500" : ""}>原始 URL</Label>
+                <Label htmlFor="url">原始 URL</Label>
                 <div className="relative">
                     <Link2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                         id="url"
                         name="url" // 方便 FormData 获取
+                        type="url"
                         placeholder="https://example.com/very/long/path..."
                         value={url}
                         onChange={(e) => setUrl(e.target.value)}
-                        className={cn("pl-9", errors.url && "border-red-500 focus-visible:ring-red-500")}
+                        className="pl-9"
                         onFocus={() => setShowCustomOption(true)}
                         autoComplete="off"
                         data-1p-ignore
                     />
                 </div>
-                {errors.url && (
-                    <span className="text-xs text-red-500 animate-in fade-in slide-in-from-top-1 block">
-                        {errors.url}
-                    </span>
-                )}
             </div>
 
             {/* --- 高级选项区域 (动画 + 预览 + 输入) --- */}
@@ -159,6 +153,8 @@ export function LinkFormFields({
                                         className={cn("pl-9 transition-colors", slug && "border-purple-200 focus-visible:ring-purple-500/20 bg-purple-50/30")}
                                         autoComplete="off"
                                         data-1p-ignore
+                                        pattern="[a-zA-Z0-9_-]*"
+                                        title="只允许字母、数字、连字符和下划线"
                                     />
                                 </div>
                             </div>

@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog"
 import { createLink } from "./actions"
 import { toast } from "sonner"
+import { validateUrl, validateSlug } from '@/lib/validation'
 import { ActionScale } from "@/components/action-scale"
 import { SessionExpiredDialog } from "@/components/session-expired-dialog"
 import { LinkFormFields } from '@/components/link-form-fields' // 引入新组件
@@ -30,21 +31,21 @@ export function CreateLinkDialog({ onSuccess }: { onSuccess?: () => void }) {
     const [isNoIndex, setIsNoIndex] = useState(true)
     const [showCustomOption, setShowCustomOption] = useState(false)
 
-    const [errors, setErrors] = useState<{ url?: string }>({})
     const [showSessionExpired, setShowSessionExpired] = useState(false)
     const [isButtonHovered, setIsButtonHovered] = useState(false)
 
     async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault()
-        setErrors({})
 
         // 手动构造 FormData 以确保状态同步（虽然 form 里有 name 属性，但 React 状态控制更稳）
         const formData = new FormData(e.currentTarget)
         // 注意：Checkbox/Switch 如果没勾选可能不会传值，这里 LinkFormFields 里已经加了 hidden input 处理
 
+        // 验证 URL 和 Slug
         const urlToCheck = formData.get('url') as string
-        if (!urlToCheck) {
-            setErrors({ url: "请输入 URL" })
+        const slugToCheck = formData.get('slug') as string
+
+        if (!validateUrl(urlToCheck) || !validateSlug(slugToCheck)) {
             return
         }
 
@@ -87,7 +88,6 @@ export function CreateLinkDialog({ onSuccess }: { onSuccess?: () => void }) {
             setSlug('')
             setUrl('')
             setIsNoIndex(true)
-            setErrors({})
         }
     }
 
@@ -117,7 +117,6 @@ export function CreateLinkDialog({ onSuccess }: { onSuccess?: () => void }) {
                         setSlug={setSlug}
                         isNoIndex={isNoIndex}
                         setIsNoIndex={setIsNoIndex}
-                        errors={errors}
                         showCustomOption={showCustomOption}
                         setShowCustomOption={setShowCustomOption}
                     />
