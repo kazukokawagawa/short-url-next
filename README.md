@@ -44,6 +44,7 @@ pnpm install
 NEXT_PUBLIC_SUPABASE_URL=你的_Supabase_Project_URL
 NEXT_PUBLIC_SUPABASE_ANON_KEY=你的_Supabase_Anon_Key
 NEXT_PUBLIC_BASE_URL=http://localhost:3000
+SUPABASE_SERVICE_ROLE_KEY=你的Secret key（也叫 service_role key）
 ```
 
 ### 4. 启动开发服务器
@@ -202,6 +203,15 @@ WHERE email = '你的邮箱地址@example.com';
 -- 开启 RLS
 alter table public.profiles enable row level security;
 ```
+
+### 6. 获取Secret key
+
+- 打开 Supabase Dashboard
+- 进入 Settings → API
+- 找到 Project API keys 部分
+- 复制 Secret keys或service_role key
+- 添加到项目根目录的 .env.local 文件
+
 ## 📦 部署指南 (Vercel)
 
 1. **推送到 GitHub**: 将你的代码提交到 GitHub 仓库。

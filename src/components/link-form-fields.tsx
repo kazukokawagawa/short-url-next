@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { nanoid } from 'nanoid'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Switch } from "@/components/ui/switch"
 import { Link2, Wand2, ShieldCheck, Globe, Sparkles } from 'lucide-react'
 import { motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/lib/utils"

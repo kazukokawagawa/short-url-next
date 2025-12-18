@@ -28,6 +28,17 @@ export function getFriendlyErrorMessage(error: { message: string, code?: string 
         return '操作太频繁，请稍后几分钟再试'
     }
 
+    // 速率限制 - 提取具体等待秒数
+    // 格式: "For security purposes, you can only request this after 43 seconds."
+    if (msg.includes('for security purposes') && msg.includes('after') && msg.includes('seconds')) {
+        const match = error.message.match(/after (\d+) seconds?/)
+        if (match && match[1]) {
+            const seconds = match[1]
+            return `请在 ${seconds} 秒后再重新尝试`
+        }
+        return '操作太频繁，请稍后再试'
+    }
+
     // --- 2. 数据库相关 (Dashboard) ---
 
     // 唯一性冲突 (比如短链 slug 重复)
