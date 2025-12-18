@@ -18,12 +18,15 @@ import { FadeIn } from "@/components/animations/fade-in"
 import { TerminalArrowIcon } from "@/components/terminal-arrow-icon"
 import { MailSendIcon } from "@/components/mail-send-icon"
 import { HomeArrowLeftIcon } from "@/components/home-arrow-left-icon"
+import { useLoading } from "@/components/providers/loading-provider"
+import { useEffect } from "react"
 
 export default function LoginPage(props: {
     searchParams: Promise<{ message: string }>
 }) {
     const searchParams = use(props.searchParams)
     const router = useRouter() // 初始化路由
+    const { isLoading: isGlobalLoading, setIsLoading: setGlobalLoading } = useLoading()
 
     const [hoverState, setHoverState] = useState<'idle' | 'login' | 'signup'>('idle')
     // 新增：专门控制 Login 按钮的加载状态
@@ -33,6 +36,11 @@ export default function LoginPage(props: {
     // 1. 新增：专门存放字段验证错误信息
     const [errors, setErrors] = useState<{ email?: string; password?: string }>({})
     const [isBackButtonHovered, setIsBackButtonHovered] = useState(false)
+
+    // 页面加载完成后关闭全局 Loading
+    useEffect(() => {
+        setGlobalLoading(false)
+    }, [setGlobalLoading])
 
     const initialDescription = "输入你的账户以登录控制台"
     const titles = { login: "欢迎回来", signup: "新的伙伴" }
@@ -69,6 +77,7 @@ export default function LoginPage(props: {
                 // 成功提示
                 toast.success("登录成功", { description: "正在跳转到控制台..." })
                 // 手动跳转
+                setGlobalLoading(true) // 触发全局 Loading
                 router.push('/dashboard')
                 // 注意：这里不设置 setIsLoggingIn(false)，让按钮一直转圈直到页面切换，体验更好
             }
@@ -117,22 +126,25 @@ export default function LoginPage(props: {
         }
     }
 
+    if (isGlobalLoading) return null // 全局 Loading 时隐藏页面
+
     return (
         <div className="relative flex min-h-screen items-center justify-center bg-background">
             {/* --- ✨ 新增：返回首页按钮 --- */}
             <FadeIn delay={0} className="absolute top-4 left-4 md:top-8 md:left-8">
-                <Link href="/">
-                    {/* variant="ghost" 让它没有背景色，看起来很干净 */}
-                    <Button
-                        variant="ghost"
-                        className="-ml-2 flex items-center gap-2 text-muted-foreground hover:text-foreground"
-                        onMouseEnter={() => setIsBackButtonHovered(true)}
-                        onMouseLeave={() => setIsBackButtonHovered(false)}
-                    >
-                        <HomeArrowLeftIcon isHovered={isBackButtonHovered} />
-                        返回首页
-                    </Button>
-                </Link>
+                <Button
+                    variant="ghost"
+                    className="-ml-2 flex items-center gap-2 text-muted-foreground hover:text-foreground"
+                    onMouseEnter={() => setIsBackButtonHovered(true)}
+                    onMouseLeave={() => setIsBackButtonHovered(false)}
+                    onClick={() => {
+                        setGlobalLoading(true)
+                        router.push("/")
+                    }}
+                >
+                    <HomeArrowLeftIcon isHovered={isBackButtonHovered} />
+                    返回首页
+                </Button>
             </FadeIn>
             <FadeIn delay={0.1} className="w-full max-w-md">
                 <Card className="w-full overflow-hidden">

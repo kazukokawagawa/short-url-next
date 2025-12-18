@@ -6,19 +6,22 @@ import {
 } from "@/components/ui/tooltip"
 import { GitCommit, Clock } from "lucide-react"
 import { format } from "date-fns"
+import { getSiteConfig } from "@/lib/site-config"
 
-export function SiteFooter() {
+export async function SiteFooter() {
+    const siteConfig = await getSiteConfig()
+
     return (
         <footer className="w-full border-t bg-background py-6 text-center text-xs text-muted-foreground">
             <div className="container mx-auto">
                 <p>
-                    &copy; {new Date().getFullYear()} LinkFlow. All rights reserved.
+                    &copy; {new Date().getFullYear()} {siteConfig.name}. All rights reserved.
                 </p>
 
                 <div className="mt-2 flex items-center justify-center gap-4">
                     {/* 作者信息 */}
                     <span>
-                        Built by <a href="#" className="underline hover:text-foreground">ChiYu</a>
+                        Built by <a href={siteConfig.authorUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">{siteConfig.authorName}</a>
                     </span>
 
                     {/* 分隔符 */}
@@ -60,3 +63,4 @@ export function SiteFooter() {
         </footer>
     )
 }
+

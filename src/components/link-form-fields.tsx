@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Link2, Wand2, ShieldCheck, Globe, Sparkles } from 'lucide-react'
 import { motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/lib/utils"
+import { getLinksSettings } from "@/app/dashboard/settings-actions"
 
 interface LinkFormFieldsProps {
     url: string
@@ -41,9 +42,13 @@ export function LinkFormFields({
         if (typeof window !== 'undefined') {
             setHost(window.location.host)
         }
-        // 生成一个随机 slug 作为 placeholder
-        const generated = nanoid(6)
-        setPlaceholderSlug(generated)
+        // 从服务器获取配置的 slug 长度，然后生成对应长度的 placeholder
+        async function fetchAndGeneratePlaceholder() {
+            const settings = await getLinksSettings()
+            const generated = nanoid(settings.slugLength)
+            setPlaceholderSlug(generated)
+        }
+        fetchAndGeneratePlaceholder()
     }, [])
 
     return (

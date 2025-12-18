@@ -2,7 +2,7 @@
 
 import { toastMessages, validateUrl, validateSlug } from '@/lib/validation'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { CopyButton } from '@/components/copy-button'
@@ -12,6 +12,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { User } from '@supabase/supabase-js'
 import { LinkFormFields } from '@/components/link-form-fields' // 引入新组件
 import { LinkArrowIcon } from '@/components/link-arrow-icon'
+import { getSiteSettings } from '@/app/dashboard/settings-actions'
 
 export function ShortenForm({ user }: { user: User | null }) {
     const router = useRouter()
@@ -21,16 +22,33 @@ export function ShortenForm({ user }: { user: User | null }) {
     const [slug, setSlug] = useState('')
     const [showCustomOption, setShowCustomOption] = useState(false)
     const [placeholderSlug, setPlaceholderSlug] = useState('')
+    const [allowPublicShorten, setAllowPublicShorten] = useState(false)
 
     // 结果与加载状态
     const [shortUrlSlug, setShortUrlSlug] = useState('')
     const [loading, setLoading] = useState(false)
     const [isButtonHovered, setIsButtonHovered] = useState(false)
 
+    // 获取站点设置
+    useEffect(() => {
+        async function fetchSiteSettings() {
+            const settings = await getSiteSettings()
+            console.log('--- ShortenForm Debug ---')
+            console.log('getSiteSettings result:', settings)
+            console.log('allowPublicShorten:', settings.allowPublicShorten)
+            console.log('-------------------------')
+            setAllowPublicShorten(settings.allowPublicShorten)
+        }
+        fetchSiteSettings()
+    }, [])
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
 
-        if (!user) {
+        console.log('handleSubmit - allowPublicShorten:', allowPublicShorten, 'user:', user)
+
+        // 如果不允许公开缩短且用户未登录，提示登录
+        if (!user && !allowPublicShorten) {
             // 创建自定义登录按钮内容组件（用 div 代替 button 避免嵌套）
             const LoginButtonContent = () => {
                 const [isHovered, setIsHovered] = useState(false)

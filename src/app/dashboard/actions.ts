@@ -7,6 +7,8 @@ import { nanoid } from "nanoid"
 import { getFriendlyErrorMessage } from "@/utils/error-mapping"
 import { headers } from "next/headers"
 
+import { retryQuery } from "@/utils/retry"
+
 // 1. 简单的格式校验
 function isValidUrl(url: string) {
     try {
@@ -55,14 +57,52 @@ export async function createLink(formData: FormData) {
 
     // 获取当前用户
     const { data: { user } } = await supabase.auth.getUser()
-    // 🔴 修改点：不再直接 redirect，而是返回一个标记
-    if (!user) {
+
+    // 获取站点设置，检查是否允许公开缩短
+    const { data: siteSettings } = await supabase
+        .from('settings')
+        .select('value')
+        .eq('key', 'site')
+        .single()
+
+    const allowPublicShorten = siteSettings?.value?.allowPublicShorten ?? true
+
+    // 如果不允许公开缩短且用户未登录，返回需要登录标记
+    if (!user && !allowPublicShorten) {
         return { error: "User not authenticated", needsLogin: true }
     }
 
     const url = formData.get('url') as string
-    const slug = formData.get('slug') as string || nanoid(6) // 如果用户没填自定义短码，就生成一个
+    const customSlug = formData.get('slug') as string
     const isNoIndex = formData.get('isNoIndex') === 'true' // 获取 isNoIndex 参数
+
+    // 获取配置的短码长度（带自动重试）
+    let slugLength = 6
+    const { data: linksSettings, error: settingsError } = await retryQuery<{ value: any }>(() =>
+        supabase
+            .from('settings')
+            .select('value')
+            .eq('key', 'links')
+            .single()
+    )
+
+    // 🔍 调试日志
+    console.log('--- createLink Debug ---')
+    console.log('settingsError:', settingsError)
+    console.log('linksSettings:', JSON.stringify(linksSettings))
+    console.log('linksSettings?.value:', linksSettings?.value)
+    console.log('typeof value:', typeof linksSettings?.value)
+    console.log('slugLength in value:', linksSettings?.value?.slugLength)
+
+    if (linksSettings?.value?.slugLength) {
+        slugLength = Number(linksSettings.value.slugLength) || 6
+    }
+
+    console.log('Final slugLength:', slugLength)
+    console.log('------------------------')
+
+    // 如果用户提供了自定义短码就用，否则生成配置长度的随机短码
+    const slug = customSlug || nanoid(slugLength)
 
     // --- 格式检查 ---
     if (!url || !isValidUrl(url)) {
@@ -94,8 +134,8 @@ export async function createLink(formData: FormData) {
         .insert({
             original_url: url,
             slug: slug,
-            user_id: user.id,
-            user_email: user.email, // 新增：保存用户邮箱
+            user_id: user?.id ?? null,
+            user_email: user?.email ?? null,
             is_no_index: isNoIndex
         })
 

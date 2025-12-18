@@ -8,13 +8,15 @@ import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 import { FadeIn } from "@/components/animations/fade-in"
 import { useEffect, useState } from "react"
-import { LoaderCircle } from "lucide-react"
-import { motion } from "framer-motion"
+import { ActionScale } from "@/components/action-scale"
+import { useLoading } from "@/components/providers/loading-provider"
+import { SmartLoading } from "@/components/smart-loading"
 
 export default function AdminLinksPage() {
     const [links, setLinks] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const router = useRouter()
+    const { isLoading: isGlobalLoading, setIsLoading: setGlobalLoading } = useLoading()
 
     const refreshLinks = async () => {
         const supabase = createClient()
@@ -38,7 +40,6 @@ export default function AdminLinksPage() {
         }
 
         // 2. 获取所有链接数据
-        // 修改点：去掉了 profiles(email)，只用 * 即可获取包括 user_email 在内的所有字段
         const { data: allLinks } = await supabase
             .from('links')
             .select('*')
@@ -46,23 +47,16 @@ export default function AdminLinksPage() {
 
         setLinks(allLinks || [])
         setLoading(false)
+        setGlobalLoading(false)
     }
 
     useEffect(() => {
         refreshLinks()
-    }, [router])
+    }, [router, setGlobalLoading])
 
+    if (isGlobalLoading) return null
     if (loading) {
-        return (
-            <div className="flex min-h-screen items-center justify-center">
-                <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-                >
-                    <LoaderCircle className="h-8 w-8 text-muted-foreground opacity-50" />
-                </motion.div>
-            </div>
-        )
+        return <SmartLoading />
     }
 
     return (

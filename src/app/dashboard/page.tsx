@@ -14,6 +14,8 @@ import { LoaderCircle, ShieldCheck, LogOut } from "lucide-react"
 import { motion } from "framer-motion"
 import Link from "next/link"
 import { HomeArrowLeftIcon } from "@/components/home-arrow-left-icon"
+import { SmartLoading } from "@/components/smart-loading"
+import { useLoading } from "@/components/providers/loading-provider"
 
 export default function Dashboard() {
     const [user, setUser] = useState<User | null>(null)
@@ -22,6 +24,7 @@ export default function Dashboard() {
     const [isAdmin, setIsAdmin] = useState(false)
     const [isHomeHovered, setIsHomeHovered] = useState(false)
     const router = useRouter()
+    const { isLoading: isGlobalLoading, setIsLoading: setGlobalLoading } = useLoading()
 
     useEffect(() => {
         async function loadData() {
@@ -53,9 +56,10 @@ export default function Dashboard() {
 
             setLinks(linksData || [])
             setLoading(false)
+            setGlobalLoading(false) // 确保全局加载状态关闭
         }
         loadData()
-    }, [router])
+    }, [router, setGlobalLoading])
 
     // 刷新链接列表的函数
     const refreshLinks = async () => {
@@ -74,34 +78,34 @@ export default function Dashboard() {
         setLinks(linksData || [])
     }
 
+    if (isGlobalLoading) {
+        return null // 全局加载中，隐藏当前页面内容以实现无缝切换
+    }
+
     if (loading) {
-        return (
-            <div className="flex min-h-screen items-center justify-center">
-                <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-                >
-                    <LoaderCircle className="h-8 w-8 text-muted-foreground opacity-50" />
-                </motion.div>
-            </div>
-        )
+        return <SmartLoading />
     }
 
     return (
         <div className="relative min-h-screen">
             {/* 返回首页按钮 - 绝对定位在屏幕左上角 */}
             <FadeIn delay={0} className="absolute top-4 left-4 md:top-8 md:left-8 z-50">
-                <Link href="/">
-                    <ActionScale
-                        onMouseEnter={() => setIsHomeHovered(true)}
-                        onMouseLeave={() => setIsHomeHovered(false)}
+                <ActionScale
+                    onMouseEnter={() => setIsHomeHovered(true)}
+                    onMouseLeave={() => setIsHomeHovered(false)}
+                >
+                    <Button
+                        variant="ghost"
+                        className="-ml-2 flex items-center gap-2 text-muted-foreground hover:text-foreground"
+                        onClick={() => {
+                            setGlobalLoading(true)
+                            router.push("/")
+                        }}
                     >
-                        <Button variant="ghost" className="-ml-2 flex items-center gap-2 text-muted-foreground hover:text-foreground">
-                            <HomeArrowLeftIcon isHovered={isHomeHovered} />
-                            返回首页
-                        </Button>
-                    </ActionScale>
-                </Link>
+                        <HomeArrowLeftIcon isHovered={isHomeHovered} />
+                        返回首页
+                    </Button>
+                </ActionScale>
             </FadeIn>
 
             {/* 主内容区域 */}
@@ -123,14 +127,19 @@ export default function Dashboard() {
                         <CreateLinkDialog onSuccess={refreshLinks} />
 
                         {isAdmin && (
-                            <Link href="/admin">
-                                <ActionScale>
-                                    <Button variant="default" className="gap-2">
-                                        <ShieldCheck className="h-4 w-4" />
-                                        管理控制台
-                                    </Button>
-                                </ActionScale>
-                            </Link>
+                            <ActionScale>
+                                <Button
+                                    variant="default"
+                                    className="gap-2"
+                                    onClick={() => {
+                                        setGlobalLoading(true)
+                                        router.push("/admin")
+                                    }}
+                                >
+                                    <ShieldCheck className="h-4 w-4" />
+                                    管理控制台
+                                </Button>
+                            </ActionScale>
                         )}
 
                         <form action={signOut}>

@@ -8,7 +8,18 @@ export async function POST(request: Request) {
 
     // 1. 检查登录状态
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
+
+    // 获取站点设置，检查是否允许公开缩短
+    const { data: siteSettings } = await supabase
+        .from('settings')
+        .select('value')
+        .eq('key', 'site')
+        .single()
+
+    const allowPublicShorten = siteSettings?.value?.allowPublicShorten ?? true
+
+    // 如果不允许公开缩短且用户未登录，返回 401
+    if (!user && !allowPublicShorten) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -79,7 +90,29 @@ export async function POST(request: Request) {
     // -----------------------
 
     // 如果用户提供了 slug，就用用户的；否则生成一个新的
-    const finalSlug = slug || nanoid(6)
+    let slugLength = 6
+    const { data: linksSettings, error: settingsError } = await supabase
+        .from('settings')
+        .select('value')
+        .eq('key', 'links')
+        .single()
+
+    // 🔍 调试日志
+    console.log('--- Slug Length Debug ---')
+    console.log('Settings Error:', settingsError)
+    console.log('Raw linksSettings:', linksSettings)
+    console.log('linksSettings.value:', linksSettings?.value)
+    console.log('typeof value:', typeof linksSettings?.value)
+    console.log('slugLength in value:', linksSettings?.value?.slugLength)
+
+    if (linksSettings?.value?.slugLength) {
+        slugLength = Number(linksSettings.value.slugLength) || 6
+    }
+
+    console.log('Final slugLength:', slugLength)
+    console.log('-------------------------')
+
+    const finalSlug = slug || nanoid(slugLength)
 
     // 2. 插入数据
     const { data, error } = await supabase
@@ -87,8 +120,8 @@ export async function POST(request: Request) {
         .insert([{
             original_url: url,
             slug: finalSlug,
-            user_id: user.id,
-            user_email: user.email
+            user_id: user?.id ?? null,
+            user_email: user?.email ?? null
         }])
         .select()
         .single()

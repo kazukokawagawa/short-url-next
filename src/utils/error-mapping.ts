@@ -39,6 +39,11 @@ export function getFriendlyErrorMessage(error: { message: string, code?: string 
         return '操作太频繁，请稍后再试'
     }
 
+    // 网络错误
+    if (msg.includes('fetch failed') || msg.includes('network request failed')) {
+        return '网络不稳定，请稍后再试'
+    }
+
     // --- 2. 数据库相关 (Dashboard) ---
 
     // 唯一性冲突 (比如短链 slug 重复)

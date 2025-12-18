@@ -52,7 +52,7 @@ export function CreateLinkDialog({ onSuccess }: { onSuccess?: () => void }) {
         setLoading(true)
         const toastId = toastMessages.linkCreating()
 
-        // 如果用户没有输入 slug，使用 placeholder
+        // 如果用户没有输入 slug，使用 placeholder（现在 placeholder 长度已与服务器配置一致）
         const finalSlug = slugToCheck || placeholderSlug
         if (finalSlug && !slugToCheck) {
             formData.set('slug', finalSlug)
