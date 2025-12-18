@@ -1,6 +1,6 @@
 'use client'
 
-import { validateUrl, validateSlug } from '@/lib/validation'
+import { toastMessages, validateUrl, validateSlug } from '@/lib/validation'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -67,14 +67,13 @@ export function ShortenForm({ user }: { user: User | null }) {
                 )
             }
 
-            toast("需要登录", {
-                description: "你需要登录以创建短链接",
-                icon: <KeyRound className="h-5 w-5" />,
-                action: {
+            toastMessages.loginRequired(
+                <KeyRound className="h-5 w-5" />,
+                {
                     label: <LoginButtonContent />,
                     onClick: () => router.push('/login')
-                },
-            })
+                }
+            )
             return
         }
 
@@ -86,7 +85,7 @@ export function ShortenForm({ user }: { user: User | null }) {
         setLoading(true)
         setShortUrlSlug('')
 
-        const toastId = toast.loading("创建链接中...", { description: "正在检查 URL 可用性和安全性..." })
+        const toastId = toastMessages.linkCreating()
 
         try {
             const res = await fetch('/api/shorten', {
@@ -103,13 +102,25 @@ export function ShortenForm({ user }: { user: User | null }) {
                 setSlug('')
                 setIsNoIndex(true)
                 setShowCustomOption(false)
-                toast.success("链接创建成功!", { id: toastId, description: "短链接已准备就绪。" })
+                toastMessages.linkCreateSuccess(toastId)
             } else {
-                toast.error("错误", { id: toastId, description: data.error || "生成失败" })
+                // 根据错误类型显示不同的 toast
+                if (data.error === 'URL_NOT_ACCESSIBLE') {
+                    toastMessages.urlNotAccessible(data.statusCode)
+                    toast.dismiss(toastId)
+                } else if (data.error === 'URL_TIMEOUT') {
+                    toastMessages.urlTimeout()
+                    toast.dismiss(toastId)
+                } else if (data.error === 'URL_VERIFICATION_FAILED') {
+                    toastMessages.urlVerificationFailed()
+                    toast.dismiss(toastId)
+                } else {
+                    toastMessages.linkCreateError(data.error || "生成失败", toastId)
+                }
             }
         } catch (error) {
             console.error(error)
-            toast.error("网络错误", { id: toastId })
+            toastMessages.networkError(toastId)
         } finally {
             setLoading(false)
         }
