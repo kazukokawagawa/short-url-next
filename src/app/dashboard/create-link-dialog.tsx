@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dialog"
 import { createLink } from "./actions"
 import { toast } from "sonner"
-import { validateUrl, validateSlug } from '@/lib/validation'
+import { toastMessages, validateUrl, validateSlug } from '@/lib/validation'
 import { ActionScale } from "@/components/action-scale"
 import { SessionExpiredDialog } from "@/components/session-expired-dialog"
 import { LinkFormFields } from '@/components/link-form-fields' // 引入新组件
@@ -50,7 +50,7 @@ export function CreateLinkDialog({ onSuccess }: { onSuccess?: () => void }) {
         }
 
         setLoading(true)
-        const toastId = toast.loading("创建链接中...", { description: "正在检查 URL 可用性和安全性..." })
+        const toastId = toastMessages.linkCreating()
 
         try {
             const result = await createLink(formData)
@@ -65,9 +65,21 @@ export function CreateLinkDialog({ onSuccess }: { onSuccess?: () => void }) {
             setLoading(false)
 
             if (result?.error) {
-                toast.error("无法创建链接", { id: toastId, description: result.error })
+                // 根据错误类型显示不同的 toast
+                if (result.error === 'URL_NOT_ACCESSIBLE') {
+                    toastMessages.urlNotAccessible((result as any).statusCode)
+                    toast.dismiss(toastId)
+                } else if (result.error === 'URL_TIMEOUT') {
+                    toastMessages.urlTimeout()
+                    toast.dismiss(toastId)
+                } else if (result.error === 'URL_VERIFICATION_FAILED') {
+                    toastMessages.urlVerificationFailed()
+                    toast.dismiss(toastId)
+                } else {
+                    toastMessages.linkCreateError(result.error, toastId)
+                }
             } else {
-                toast.success("链接创建成功!", { id: toastId, description: "短链接已准备就绪。" })
+                toastMessages.linkCreateSuccess(toastId)
                 setOpen(false)
                 handleOpenChange(false) // 彻底重置
                 // 调用刷新回调而不是整页刷新
@@ -77,7 +89,7 @@ export function CreateLinkDialog({ onSuccess }: { onSuccess?: () => void }) {
             }
         } catch (error) {
             setLoading(false)
-            toast.error("网络错误", { id: toastId })
+            toastMessages.networkError(toastId)
         }
     }
 
