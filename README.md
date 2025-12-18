@@ -73,6 +73,12 @@ create table public.links (
 alter table public.links 
 add column is_no_index boolean default true;
 
+create table public.profiles (
+  id uuid references auth.users on delete cascade not null primary key,
+  email text,
+  role text default 'user' check (role in ('user', 'admin'))
+);
+
 -- 开启行级安全策略 (RLS)
 alter table public.links enable row level security;
 
@@ -90,6 +96,51 @@ with check (auth.uid() = user_id);
 create policy "User can delete own links" 
 on public.links for delete 
 using (auth.uid() = user_id);
+
+create table public.profiles (
+  id uuid references auth.users on delete cascade not null primary key,
+  email text,
+  role text default 'user' check (role in ('user', 'admin'))
+);
+
+alter table public.profiles enable row level security;
+
+create or replace function public.is_admin()
+returns boolean
+language sql
+security definer -- 关键：以定义者权限运行，绕过 RLS
+set search_path = public -- 安全最佳实践
+stable
+as $$
+  select exists (
+    select 1
+    from public.profiles
+    where id = auth.uid()
+    and role = 'admin'
+  );
+$$;
+
+-- 允许用户看自己 (基础策略)
+create policy "Users can view own profile"
+on public.profiles for select
+to authenticated
+using ( auth.uid() = id );
+
+-- 允许管理员看所有人
+create policy "Admins can view all profiles"
+on public.profiles for select
+to authenticated
+using ( is_admin() );
+
+-- 查询
+SELECT 
+    au.email as "登录邮箱",
+    au.id as "登录ID (Auth)",
+    p.role as "当前角色",
+    p.id as "业务表ID (Profile)"
+FROM auth.users au
+LEFT JOIN public.profiles p ON au.id = p.id
+WHERE au.email = '你的登录邮箱@example.com';
 ```
 
 ### 2. 创建点击计数函数 (RPC)
@@ -133,6 +184,17 @@ Supabase 为了安全，只允许重定向到白名单内的域名。
 建议：你可以保留 http://localhost:3000/** 以便本地开发测试。
 
 点击 Save。
+
+### 5. 给予自己邮箱管理员权限
+```SQL
+-- 将特定邮箱的用户提升为管理员
+UPDATE public.profiles
+SET role = 'admin'
+WHERE email = '你的邮箱地址@example.com';
+
+-- 开启 RLS
+alter table public.profiles enable row level security;
+```
 ## 📦 部署指南 (Vercel)
 
 1. **推送到 GitHub**: 将你的代码提交到 GitHub 仓库。

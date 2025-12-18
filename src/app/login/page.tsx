@@ -11,9 +11,10 @@ import { motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner" // 引入 Toast
 import Link from "next/link"
-import { Loader2, ChevronLeft } from "lucide-react" // 引入 Loading 图标 和 ChevronLeft
+import { LoaderCircle, ChevronLeft } from "lucide-react" // 引入 Loading 图标 和 ChevronLeft
 
 import { ActionScale } from "@/components/action-scale"
+import { FadeIn } from "@/components/animations/fade-in"
 
 export default function LoginPage(props: {
     searchParams: Promise<{ message: string }>
@@ -115,7 +116,7 @@ export default function LoginPage(props: {
     return (
         <div className="relative flex min-h-screen items-center justify-center bg-background">
             {/* --- ✨ 新增：返回首页按钮 --- */}
-            <div className="absolute top-4 left-4 md:top-8 md:left-8">
+            <FadeIn delay={0} className="absolute top-4 left-4 md:top-8 md:left-8">
                 <Link href="/">
                     {/* variant="ghost" 让它没有背景色，看起来很干净 */}
                     <Button variant="ghost" className="-ml-2 flex items-center gap-2 text-muted-foreground hover:text-foreground">
@@ -123,156 +124,158 @@ export default function LoginPage(props: {
                         返回首页
                     </Button>
                 </Link>
-            </div>
-            <Card className="w-full max-w-md overflow-hidden">
-                <CardHeader className="relative h-[100px] flex flex-col items-start justify-start pt-4 pl-6 text-left">
+            </FadeIn>
+            <FadeIn delay={0.1} className="w-full max-w-md">
+                <Card className="w-full overflow-hidden">
+                    <CardHeader className="relative h-[100px] flex flex-col items-start justify-start pt-4 pl-6 text-left">
 
-                    {/* --- 浮现的标题 --- */}
-                    <AnimatePresence>
-                        {hoverState !== 'idle' && (
-                            <div className="absolute top-4 left-6 z-10">
-                                <motion.h1
-                                    initial={{ opacity: 0, y: 15, scale: 0.9 }}
-                                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                                    exit={{ opacity: 0, y: -10, scale: 0.9 }}
-                                    transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1.0] }}
-                                    className="text-3xl font-bold tracking-tight text-foreground"
-                                >
-                                    {titles[hoverState]}
-                                </motion.h1>
+                        {/* --- 浮现的标题 --- */}
+                        <AnimatePresence>
+                            {hoverState !== 'idle' && (
+                                <div className="absolute top-4 left-6 z-10">
+                                    <motion.h1
+                                        initial={{ opacity: 0, y: 15, scale: 0.9 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        exit={{ opacity: 0, y: -10, scale: 0.9 }}
+                                        transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1.0] }}
+                                        className="text-3xl font-bold tracking-tight text-foreground"
+                                    >
+                                        {titles[hoverState]}
+                                    </motion.h1>
+                                </div>
+                            )}
+                        </AnimatePresence>
+
+                        {/* --- 平滑移动的描述文字 --- */}
+                        <motion.p
+                            style={{ transformOrigin: "0 0" }} // 关键修改：从左上角缩放，保证对齐
+                            animate={{
+                                y: hoverState === 'idle' ? 0 : 40,
+                                scale: hoverState === 'idle' ? 1 : 0.6,
+                                opacity: hoverState === 'idle' ? 1 : 0.7,
+                            }}
+                            transition={{
+                                duration: 0.5,
+                                ease: [0.25, 0.1, 0.25, 1.0]
+                            }}
+                            className={cn(
+                                "text-2xl font-bold text-foreground m-0", // 移除 margin 干扰
+                                "transition-colors duration-500",
+                                hoverState !== 'idle' && "text-muted-foreground font-normal"
+                            )}
+                        >
+                            {initialDescription}
+                        </motion.p>
+                    </CardHeader>
+
+                    <CardContent>
+                        <form
+                            // 禁用浏览器默认验证气泡
+                            noValidate
+                            className="space-y-4"
+                        >
+                            <div className="space-y-2">
+                                {/* 给 Label 加红星提示 (可选) */}
+                                <Label htmlFor="email" className={errors.email ? "text-red-500" : ""}>
+                                    Email
+                                </Label>
+                                <Input
+                                    id="email"
+                                    name="email"
+                                    type="email"
+                                    placeholder="username@example.com"
+                                    // 移除 required (已手写校验)
+                                    // required 
+
+                                    // 动态样式：如果有错，加红框
+                                    className={cn(errors.email && "border-red-500 focus-visible:ring-red-500")}
+                                />
+                                {/* 显示错误文字 */}
+                                {errors.email && (
+                                    <span className="text-xs text-red-500 animate-in fade-in slide-in-from-top-1">
+                                        {errors.email}
+                                    </span>
+                                )}
                             </div>
-                        )}
-                    </AnimatePresence>
+                            <div className="space-y-2">
+                                <Label htmlFor="password" className={errors.password ? "text-red-500" : ""}>
+                                    Password
+                                </Label>
+                                <Input
+                                    id="password"
+                                    name="password"
+                                    type="password"
+                                    // required  <-- 移除
+                                    className={cn(errors.password && "border-red-500 focus-visible:ring-red-500")}
+                                />
+                                {errors.password && (
+                                    <span className="text-xs text-red-500 animate-in fade-in slide-in-from-top-1">
+                                        {errors.password}
+                                    </span>
+                                )}
+                            </div>
 
-                    {/* --- 平滑移动的描述文字 --- */}
-                    <motion.p
-                        style={{ transformOrigin: "0 0" }} // 关键修改：从左上角缩放，保证对齐
-                        animate={{
-                            y: hoverState === 'idle' ? 0 : 40,
-                            scale: hoverState === 'idle' ? 1 : 0.6,
-                            opacity: hoverState === 'idle' ? 1 : 0.7,
-                        }}
-                        transition={{
-                            duration: 0.5,
-                            ease: [0.25, 0.1, 0.25, 1.0]
-                        }}
-                        className={cn(
-                            "text-2xl font-bold text-foreground m-0", // 移除 margin 干扰
-                            "transition-colors duration-500",
-                            hoverState !== 'idle' && "text-muted-foreground font-normal"
-                        )}
-                    >
-                        {initialDescription}
-                    </motion.p>
-                </CardHeader>
-
-                <CardContent>
-                    <form
-                        // 禁用浏览器默认验证气泡
-                        noValidate
-                        className="space-y-4"
-                    >
-                        <div className="space-y-2">
-                            {/* 给 Label 加红星提示 (可选) */}
-                            <Label htmlFor="email" className={errors.email ? "text-red-500" : ""}>
-                                Email
-                            </Label>
-                            <Input
-                                id="email"
-                                name="email"
-                                type="email"
-                                placeholder="username@example.com"
-                                // 移除 required (已手写校验)
-                                // required 
-
-                                // 动态样式：如果有错，加红框
-                                className={cn(errors.email && "border-red-500 focus-visible:ring-red-500")}
-                            />
-                            {/* 显示错误文字 */}
-                            {errors.email && (
-                                <span className="text-xs text-red-500 animate-in fade-in slide-in-from-top-1">
-                                    {errors.email}
-                                </span>
-                            )}
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="password" className={errors.password ? "text-red-500" : ""}>
-                                Password
-                            </Label>
-                            <Input
-                                id="password"
-                                name="password"
-                                type="password"
-                                // required  <-- 移除
-                                className={cn(errors.password && "border-red-500 focus-visible:ring-red-500")}
-                            />
-                            {errors.password && (
-                                <span className="text-xs text-red-500 animate-in fade-in slide-in-from-top-1">
-                                    {errors.password}
-                                </span>
-                            )}
-                        </div>
-
-                        <div className="flex flex-col gap-3 mt-6 z-20 relative">
-                            {/* --- 登录按钮 --- */}
-                            <ActionScale
-                                onHoverStart={() => setHoverState('login')}
-                                onHoverEnd={() => setHoverState('idle')}
-                                className="w-full"
-                                disabled={isLoggingIn || isSigningUp}
-                            >
-                                {/* formAction={handleLogin} 
+                            <div className="flex flex-col gap-3 mt-6 z-20 relative">
+                                {/* --- 登录按钮 --- */}
+                                <ActionScale
+                                    onHoverStart={() => setHoverState('login')}
+                                    onHoverEnd={() => setHoverState('idle')}
+                                    className="w-full"
+                                    disabled={isLoggingIn || isSigningUp}
+                                >
+                                    {/* formAction={handleLogin} 
                    Next.js 允许 formAction 接受一个 async function 
                 */}
-                                <Button
-                                    formAction={handleLogin}
-                                    disabled={isLoggingIn || isSigningUp} // 防止重复点击
-                                    className="w-full"
-                                >
-                                    {isLoggingIn ? (
-                                        <>
-                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                            登录中...
-                                        </>
-                                    ) : "登录"}
-                                </Button>
-                            </ActionScale>
+                                    <Button
+                                        formAction={handleLogin}
+                                        disabled={isLoggingIn || isSigningUp} // 防止重复点击
+                                        className="w-full"
+                                    >
+                                        {isLoggingIn ? (
+                                            <>
+                                                <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                                                登录中...
+                                            </>
+                                        ) : "登录"}
+                                    </Button>
+                                </ActionScale>
 
-                            {/* --- 注册按钮 --- */}
-                            <ActionScale
-                                onHoverStart={() => setHoverState('signup')}
-                                onHoverEnd={() => setHoverState('idle')}
-                                className="w-full"
-                                disabled={isLoggingIn || isSigningUp}
-                            >
-                                <Button
-                                    formAction={handleSignup}
+                                {/* --- 注册按钮 --- */}
+                                <ActionScale
+                                    onHoverStart={() => setHoverState('signup')}
+                                    onHoverEnd={() => setHoverState('idle')}
+                                    className="w-full"
                                     disabled={isLoggingIn || isSigningUp}
-                                    variant="outline"
-                                    className="w-full"
                                 >
-                                    {isSigningUp ? (
-                                        <>
-                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                            注册中...
-                                        </>
-                                    ) : "注册"}
-                                </Button>
-                            </ActionScale>
-                        </div>
+                                    <Button
+                                        formAction={handleSignup}
+                                        disabled={isLoggingIn || isSigningUp}
+                                        variant="outline"
+                                        className="w-full"
+                                    >
+                                        {isSigningUp ? (
+                                            <>
+                                                <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                                                注册中...
+                                            </>
+                                        ) : "注册"}
+                                    </Button>
+                                </ActionScale>
+                            </div>
 
-                        {searchParams?.message && (
-                            <motion.p
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: 'auto' }}
-                                className="mt-4 text-center text-sm text-red-500 bg-red-50 p-2 rounded"
-                            >
-                                {searchParams.message}
-                            </motion.p>
-                        )}
-                    </form>
-                </CardContent>
-            </Card>
+                            {searchParams?.message && (
+                                <motion.p
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                    className="mt-4 text-center text-sm text-red-500 bg-red-50 p-2 rounded"
+                                >
+                                    {searchParams.message}
+                                </motion.p>
+                            )}
+                        </form>
+                    </CardContent>
+                </Card>
+            </FadeIn>
         </div>
     )
 }

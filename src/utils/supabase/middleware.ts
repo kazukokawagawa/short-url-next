@@ -64,5 +64,32 @@ export async function updateSession(request: NextRequest) {
         return NextResponse.redirect(new URL('/login', request.url))
     }
 
+    // 2. [新增] 管理员权限保护
+    if (request.nextUrl.pathname.startsWith('/admin')) {
+        // 如果没登录，去登录页
+        if (!user) {
+            return NextResponse.redirect(new URL('/login', request.url))
+        }
+
+        // 检查用户角色
+        const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single()
+
+        // 🔍 调试日志 (会输出在 VSCode 的终端里)
+        // console.log("----------------DEBUG----------------")
+        // console.log("当前用户ID:", user.id)
+        // console.log("查询结果 Profile:", profile)
+        // console.log("查询错误 Error:", error)
+        // console.log("-------------------------------------")
+
+        // 如果不是 admin，踢回 dashboard
+        if (profile?.role !== 'admin') {
+            return NextResponse.redirect(new URL('/dashboard', request.url))
+        }
+    }
+
     return response
 }

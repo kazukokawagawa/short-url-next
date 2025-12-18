@@ -23,7 +23,7 @@ import {
     EmptyTitle,
 } from "@/components/ui/empty"
 
-const MotionRow = motion(TableRow)
+const MotionRow = motion.create(TableRow)
 
 export function LinksTable({ links }: { links: any[] }) {
     // --- Empty 状态优化 ---
