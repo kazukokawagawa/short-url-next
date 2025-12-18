@@ -21,7 +21,7 @@ import {
 import { ActionScale } from "@/components/action-scale"
 import { SessionExpiredDialog } from "@/components/session-expired-dialog"
 
-export function DeleteLinkDialog({ id }: { id: number }) {
+export function DeleteLinkDialog({ id, onSuccess }: { id: number, onSuccess?: () => void }) {
     const [open, setOpen] = useState(false)
 
     const [isDeleting, setIsDeleting] = useState(false)
@@ -48,8 +48,12 @@ export function DeleteLinkDialog({ id }: { id: number }) {
             setIsDeleting(false)
         } else {
             toast.success("链接已删除")
-            // 注意：这里不需要手动 setOpen(false)，因为数据被删除了，
-            // 父组件(表格)会刷新，这一行本身就会从 DOM 中消失。
+            setIsDeleting(false)
+            setOpen(false) // 关闭对话框
+            // 调用刷新回调
+            if (onSuccess) {
+                onSuccess()
+            }
         }
     }
 

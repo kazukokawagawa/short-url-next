@@ -95,6 +95,7 @@ export async function createLink(formData: FormData) {
             original_url: url,
             slug: slug,
             user_id: user.id,
+            user_email: user.email, // 新增：保存用户邮箱
             is_no_index: isNoIndex
         })
 

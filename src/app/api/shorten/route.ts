@@ -24,6 +24,7 @@ export async function POST(request: Request) {
             original_url: url,
             slug: finalSlug,
             user_id: user.id,
+            user_email: user.email, // 新增：保存用户邮箱
             is_no_index: isNoIndex !== undefined ? isNoIndex : true // 默认为 true
         }])
         .select()

@@ -25,7 +25,7 @@ import {
 
 const MotionRow = motion.create(TableRow)
 
-export function LinksTable({ links }: { links: any[] }) {
+export function LinksTable({ links, isAdmin = false, onDeleteSuccess }: { links: any[], isAdmin?: boolean, onDeleteSuccess?: () => void }) {
     // --- Empty 状态优化 ---
     if (!links?.length) {
         return (
@@ -60,6 +60,7 @@ export function LinksTable({ links }: { links: any[] }) {
                     <TableRow className="bg-muted/50 hover:bg-muted/50">
                         <TableHead className="w-[250px] py-4 pl-6">短链接</TableHead>
                         <TableHead className="py-4">原始链接</TableHead>
+                        {isAdmin && <TableHead className="w-[200px] py-4">创建者</TableHead>}
                         <TableHead className="w-[150px] py-4">创建于</TableHead>
                         <TableHead className="w-[100px] py-4 text-center">点击数</TableHead>
                         <TableHead className="w-[100px] py-4 pr-6 text-right">操作</TableHead>
@@ -85,11 +86,12 @@ export function LinksTable({ links }: { links: any[] }) {
                                     }}
                                     className="group hover:bg-muted/30 transition-colors"
                                 >
+                                    {/* 1. 优化 Short Link 显示 */}
                                     <TableCell className="py-4 pl-6 font-medium">
                                         <a
                                             href={`/${link.slug}`}
                                             target="_blank"
-                                            className="text-primary transition-all rounded px-2 py-1 -ml-2 hover:bg-purple-500/10 hover:text-purple-500 flex items-center gap-2 w-fit"
+                                            className="text-primary transition-colors hover:underline hover:text-primary/80 flex items-center gap-2"
                                         >
                                             <Link2 className="h-3.5 w-3.5 opacity-70" />
                                             <span className="truncate">
@@ -108,6 +110,15 @@ export function LinksTable({ links }: { links: any[] }) {
                                         </div>
                                     </TableCell>
 
+                                    {/* 管理员模式：显示创建者邮箱 */}
+                                    {isAdmin && (
+                                        <TableCell className="py-4">
+                                            <div className="text-sm text-muted-foreground truncate max-w-[180px]" title={link.user_email}>
+                                                {link.user_email || '未知用户'}
+                                            </div>
+                                        </TableCell>
+                                    )}
+
                                     <TableCell className="py-4 text-muted-foreground text-sm whitespace-nowrap">
                                         {formatDistanceToNow(new Date(link.created_at), { addSuffix: true })}
                                     </TableCell>
@@ -120,7 +131,7 @@ export function LinksTable({ links }: { links: any[] }) {
                                         {/* 3. 优化操作区 */}
                                         <div className="flex items-center justify-end gap-2 opacity-70 group-hover:opacity-100 transition-opacity">
                                             <CopyButton slug={link.slug} />
-                                            <DeleteLinkDialog id={link.id} />
+                                            <DeleteLinkDialog id={link.id} onSuccess={onDeleteSuccess} />
                                         </div>
                                     </TableCell>
                                 </MotionRow>

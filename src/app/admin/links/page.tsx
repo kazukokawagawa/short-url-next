@@ -39,9 +39,10 @@ export default function AdminLinksPage() {
             }
 
             // 2. 获取所有链接数据
+            // 修改点：去掉了 profiles(email)，只用 * 即可获取包括 user_email 在内的所有字段
             const { data: allLinks } = await supabase
                 .from('links')
-                .select('*, profiles(email)')
+                .select('*')
                 .order('created_at', { ascending: false })
 
             setLinks(allLinks || [])
@@ -81,7 +82,7 @@ export default function AdminLinksPage() {
                 </FadeIn>
             </div>
 
-            <LinksTable links={links} />
+            <LinksTable links={links} isAdmin={true} />
         </div>
     )
 }

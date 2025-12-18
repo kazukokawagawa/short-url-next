@@ -79,6 +79,13 @@ create table public.profiles (
   role text default 'user' check (role in ('user', 'admin'))
 );
 
+-- 向 links 表添加 user_email 字段
+ALTER TABLE links 
+ADD COLUMN user_email text;
+
+-- 可选：为方便查询，给 user_email 添加索引
+CREATE INDEX idx_links_user_email ON links(user_email);
+
 -- 开启行级安全策略 (RLS)
 alter table public.links enable row level security;
 

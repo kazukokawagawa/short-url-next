@@ -44,9 +44,11 @@ export default function Dashboard() {
 
             setIsAdmin(profile?.role === 'admin')
 
+            // 只获取当前用户的链接
             const { data: linksData } = await supabase
                 .from('links')
                 .select('*')
+                .eq('user_id', user.id)
                 .order('created_at', { ascending: false })
 
             setLinks(linksData || [])
@@ -58,9 +60,16 @@ export default function Dashboard() {
     // 刷新链接列表的函数
     const refreshLinks = async () => {
         const supabase = createClient()
+
+        // 获取当前用户
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) return
+
+        // 只获取当前用户的链接
         const { data: linksData } = await supabase
             .from('links')
             .select('*')
+            .eq('user_id', user.id)
             .order('created_at', { ascending: false })
         setLinks(linksData || [])
     }
@@ -136,7 +145,7 @@ export default function Dashboard() {
                 </div>
 
                 {/* 数据表格 */}
-                <LinksTable links={links} />
+                <LinksTable links={links} onDeleteSuccess={refreshLinks} />
             </div>
         </div>
     )
