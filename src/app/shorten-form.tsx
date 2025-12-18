@@ -14,11 +14,29 @@ import { motion, AnimatePresence } from "framer-motion"
 import { User } from '@supabase/supabase-js'
 import { cn } from "@/lib/utils"
 
+// 生成 6 位随机字符 (大小写字母 + 数字)
+function generateRandomString(length = 6) {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+}
+
 export function ShortenForm({ user }: { user: User | null }) {
     const router = useRouter()
     const [url, setUrl] = useState('')
     const [slug, setSlug] = useState('')
     const [isNoIndex, setIsNoIndex] = useState(true)
+
+    // ✨ 新增：用于展示的随机占位符
+    const [placeholderSlug, setPlaceholderSlug] = useState('...')
+
+    // ✨ 新增：组件加载后，生成一个随机码
+    useEffect(() => {
+        setPlaceholderSlug(generateRandomString(6))
+    }, [])
 
     const [shortUrlSlug, setShortUrlSlug] = useState('')
     const [loading, setLoading] = useState(false)
@@ -59,10 +77,19 @@ export function ShortenForm({ user }: { user: User | null }) {
         setShortUrlSlug('')
 
         try {
+            // ✨ 核心修改在这里 ✨
+            // 逻辑：如果用户填了 slug，就用用户的；没填，就用我们生成的 placeholderSlug
+            const finalSlug = slug || placeholderSlug
+
             const res = await fetch('/api/shorten', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ url, slug, isNoIndex }),
+                // 把计算好的 finalSlug 发送给后端
+                body: JSON.stringify({
+                    url,
+                    slug: finalSlug,
+                    isNoIndex
+                }),
             })
             const data = await res.json()
 
@@ -72,6 +99,10 @@ export function ShortenForm({ user }: { user: User | null }) {
                 setSlug('')
                 setIsNoIndex(true)
                 setShowCustomOption(false)
+
+                // ✨ 可选优化：生成完后，重新摇一个号，给下一次使用
+                setPlaceholderSlug(generateRandomString(6))
+
                 toast.success("链接创建成功!")
             } else {
                 toast.error("错误", { description: data.error || "生成失败" })
@@ -92,7 +123,7 @@ export function ShortenForm({ user }: { user: User | null }) {
                 <div className="flex flex-col space-y-1.5 relative">
                     <Label htmlFor="url" className={errors.url ? "text-red-500" : ""}>原始 URL</Label>
                     <div className="relative">
-                        <Link2 className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Link2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
                             id="url"
                             placeholder="https://example.com/very/long/path..."
@@ -168,7 +199,7 @@ export function ShortenForm({ user }: { user: User | null }) {
                                                 {/* 重点高亮 Slug 部分 */}
                                                 <span className={slug ? "text-purple-500 font-bold bg-purple-500/10 px-1 rounded" : "text-primary"}>
                                                     {slug || (
-                                                        <span className="text-muted-foreground/50 italic font-normal">random-string</span>
+                                                        <span className="text-muted-foreground/50 italic font-normal">{placeholderSlug}</span>
                                                     )}
                                                 </span>
                                             </p>
@@ -184,7 +215,7 @@ export function ShortenForm({ user }: { user: User | null }) {
                                         </Label>
                                     </div>
                                     <div className="relative">
-                                        <Wand2 className={cn("absolute left-3 top-3 h-4 w-4", slug ? "text-purple-500" : "text-muted-foreground")} />
+                                        <Wand2 className={cn("absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4", slug ? "text-purple-500" : "text-muted-foreground")} />
                                         <Input
                                             id="slug"
                                             placeholder="my-custom-name"
