@@ -96,6 +96,51 @@ with check (auth.uid() = user_id);
 create policy "User can delete own links" 
 on public.links for delete 
 using (auth.uid() = user_id);
+
+create table public.profiles (
+  id uuid references auth.users on delete cascade not null primary key,
+  email text,
+  role text default 'user' check (role in ('user', 'admin'))
+);
+
+alter table public.profiles enable row level security;
+
+create or replace function public.is_admin()
+returns boolean
+language sql
+security definer -- 关键：以定义者权限运行，绕过 RLS
+set search_path = public -- 安全最佳实践
+stable
+as $$
+  select exists (
+    select 1
+    from public.profiles
+    where id = auth.uid()
+    and role = 'admin'
+  );
+$$;
+
+-- 允许用户看自己 (基础策略)
+create policy "Users can view own profile"
+on public.profiles for select
+to authenticated
+using ( auth.uid() = id );
+
+-- 允许管理员看所有人
+create policy "Admins can view all profiles"
+on public.profiles for select
+to authenticated
+using ( is_admin() );
+
+-- 查询
+SELECT 
+    au.email as "登录邮箱",
+    au.id as "登录ID (Auth)",
+    p.role as "当前角色",
+    p.id as "业务表ID (Profile)"
+FROM auth.users au
+LEFT JOIN public.profiles p ON au.id = p.id
+WHERE au.email = '你的登录邮箱@example.com';
 ```
 
 ### 2. 创建点击计数函数 (RPC)
