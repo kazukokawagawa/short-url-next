@@ -8,7 +8,7 @@ interface HomeArrowLeftIconProps {
 
 export function HomeArrowLeftIcon({ isHovered = false }: HomeArrowLeftIconProps) {
     return (
-        <div className="relative inline-flex items-center justify-center w-[16px] h-[16px] mr-2">
+        <div className="relative inline-flex items-center justify-center w-[16px] h-[16px] md:mr-2">
             <AnimatePresence mode="wait">
                 {!isHovered ? (
                     <motion.svg

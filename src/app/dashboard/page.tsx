@@ -87,27 +87,7 @@ export default function Dashboard() {
     }
 
     return (
-        <div className="relative min-h-screen">
-            {/* 返回首页按钮 - 绝对定位在屏幕左上角 */}
-            <FadeIn delay={0} className="absolute top-4 left-4 md:top-8 md:left-8 z-50">
-                <ActionScale
-                    onMouseEnter={() => setIsHomeHovered(true)}
-                    onMouseLeave={() => setIsHomeHovered(false)}
-                >
-                    <Button
-                        variant="ghost"
-                        className="-ml-2 flex items-center gap-2 text-muted-foreground hover:text-foreground"
-                        onClick={() => {
-                            setGlobalLoading(true)
-                            router.push("/")
-                        }}
-                    >
-                        <HomeArrowLeftIcon isHovered={isHomeHovered} />
-                        返回首页
-                    </Button>
-                </ActionScale>
-            </FadeIn>
-
+        <div className="min-h-screen">
             {/* 主内容区域 */}
             <div className="container mx-auto max-w-6xl px-4 py-8">
                 {/* 头部导航栏重构：清晰分层 */}
@@ -123,30 +103,50 @@ export default function Dashboard() {
                     </FadeIn>
 
                     {/* 右侧：操作按钮组 */}
-                    <FadeIn delay={0.1} className="flex items-center gap-4">
+                    <FadeIn delay={0.1} className="flex items-center gap-2 md:gap-3">
+                        {/* 返回首页按钮 */}
+                        <ActionScale
+                            onMouseEnter={() => setIsHomeHovered(true)}
+                            onMouseLeave={() => setIsHomeHovered(false)}
+                        >
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                className="md:w-auto md:px-4"
+                                onClick={() => {
+                                    setGlobalLoading(true)
+                                    router.push("/")
+                                }}
+                            >
+                                <HomeArrowLeftIcon isHovered={isHomeHovered} />
+                                <span className="hidden md:inline">返回首页</span>
+                            </Button>
+                        </ActionScale>
+
                         <CreateLinkDialog onSuccess={refreshLinks} />
 
                         {isAdmin && (
                             <ActionScale>
                                 <Button
                                     variant="default"
-                                    className="gap-2"
+                                    size="icon"
+                                    className="md:w-auto md:px-4 md:gap-2"
                                     onClick={() => {
                                         setGlobalLoading(true)
                                         router.push("/admin")
                                     }}
                                 >
                                     <ShieldCheck className="h-4 w-4" />
-                                    管理控制台
+                                    <span className="hidden md:inline">管理控制台</span>
                                 </Button>
                             </ActionScale>
                         )}
 
                         <form action={signOut}>
                             <ActionScale>
-                                <Button variant="outline" className="gap-2">
+                                <Button variant="outline" size="icon" className="md:w-auto md:px-4 md:gap-2">
                                     <LogOut className="h-4 w-4" />
-                                    登出
+                                    <span className="hidden md:inline">登出</span>
                                 </Button>
                             </ActionScale>
                         </form>
