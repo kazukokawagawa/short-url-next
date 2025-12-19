@@ -18,6 +18,9 @@ export default function AdminPage() {
     const { isLoading: isGlobalLoading, setIsLoading: setGlobalLoading } = useLoading()
 
     useEffect(() => {
+        // 立即关闭全局加载状态，让本页加载动画接管
+        setGlobalLoading(false)
+
         async function checkAdmin() {
             const supabase = createClient()
             const { data: { user } } = await supabase.auth.getUser()
@@ -39,7 +42,6 @@ export default function AdminPage() {
             }
 
             setLoading(false)
-            setGlobalLoading(false)
         }
         checkAdmin()
     }, [router, setGlobalLoading])
