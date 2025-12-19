@@ -3,11 +3,12 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
 import { ThemeProvider } from "@/components/theme-provider";
+import { ThemeColorProvider } from "@/components/theme-color-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { SiteFooter } from "@/components/site-footer";
 import { VerificationToast } from "@/components/verification-toast";
 import React from "react";
-import { getCachedSiteConfig } from "@/lib/site-config";
+import { getCachedSiteConfig, getAppearanceConfig } from "@/lib/site-config";
 import { LoadingProvider } from "@/components/providers/loading-provider";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
@@ -52,11 +53,14 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // 从数据库读取外观配置
+  const appearanceConfig = await getAppearanceConfig();
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -74,10 +78,11 @@ export default function RootLayout({
       >
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme={appearanceConfig.themeMode}
           enableSystem
           disableTransitionOnChange
         >
+          <ThemeColorProvider primaryColor={appearanceConfig.primaryColor} />
           <LoadingProvider>
             {/* 核心修改：用 main 包裹 children 并添加 flex-1 */}
             <main className="flex-1 w-full">

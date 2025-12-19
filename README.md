@@ -187,7 +187,7 @@ with check ( is_admin() );
 insert into public.settings (key, value, description) values
   ('site', '{"name": "LinkFlow", "subtitle": "下一代短链接生成器", "description": "让链接更短，让分享更简单", "keywords": "短链接,URL Shortener,Link Management,Next.js", "authorName": "池鱼", "authorUrl": "https://chiyu.it", "allowPublicShorten": true}', '站点配置'),
   ('links', '{"slugLength": 6, "enableClickStats": true}', '链接设置'),
-  ('appearance', '{"primaryColor": "#7c3aed", "themeMode": "system"}', '外观设置'),
+  ('appearance', '{"primaryColor": "#1a1a1f", "themeMode": "system"}', '外观设置'),
   ('data', '{"autoCleanExpired": false, "expiredDays": 90}', '数据管理'),
   ('maintenance', '{"enabled": false, "message": ""}', '维护模式'),
   ('security', '{"turnstileEnabled": false, "turnstileSiteKey": "", "turnstileSecretKey": "", "safeBrowsingEnabled": false, "safeBrowsingApiKey": ""}', '安全设置 - 人机验证与链接安全检测');

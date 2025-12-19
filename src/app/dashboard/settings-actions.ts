@@ -58,3 +58,28 @@ export async function getSiteSettings() {
         allowPublicShorten: data.value?.allowPublicShorten ?? true
     }
 }
+
+/**
+ * 获取外观设置（用于动态主题色）
+ */
+export async function getAppearanceSettings() {
+    const supabase = await createClient()
+
+    const { data, error } = await supabase
+        .from('settings')
+        .select('value')
+        .eq('key', 'appearance')
+        .single()
+
+    if (error || !data) {
+        return {
+            primaryColor: "#1a1a1f",
+            themeMode: "system" as const
+        }
+    }
+
+    return {
+        primaryColor: data.value?.primaryColor ?? "#1a1a1f",
+        themeMode: (data.value?.themeMode ?? "system") as "light" | "dark" | "system"
+    }
+}

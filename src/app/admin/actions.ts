@@ -136,7 +136,7 @@ export async function getSettings(): Promise<{ data?: AllSettings, error?: strin
                 allowPublicShorten: true
             },
             links: settingsMap.links || { slugLength: 6, enableClickStats: true },
-            appearance: settingsMap.appearance || { primaryColor: "#7c3aed", themeMode: "system" },
+            appearance: settingsMap.appearance || { primaryColor: "#1a1a1f", themeMode: "system" },
             data: settingsMap.data || { autoCleanExpired: false, expiredDays: 90 },
             maintenance: settingsMap.maintenance || { enabled: false, message: "" },
             security: settingsMap.security || { turnstileEnabled: false, turnstileSiteKey: "", turnstileSecretKey: "", safeBrowsingEnabled: false, safeBrowsingApiKey: "" }

@@ -17,12 +17,15 @@ import { toast } from "sonner"
 import { getSettings, saveSettings, AllSettings } from "@/app/admin/actions"
 import { SmartLoading } from "@/components/smart-loading"
 import { useLoading } from "@/components/providers/loading-provider"
+import { useTheme } from "next-themes"
+import { generatePrimaryColors } from "@/lib/color-utils"
 
 export default function AdminSettingsPage() {
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
     const router = useRouter()
     const { isLoading: isGlobalLoading, setIsLoading: setGlobalLoading } = useLoading()
+    const { theme, setTheme } = useTheme()
 
     const [siteName, setSiteName] = useState("LinkFlow")
     const [siteSubtitle, setSiteSubtitle] = useState("下一代短链接生成器")
@@ -37,7 +40,7 @@ export default function AdminSettingsPage() {
     const [enableClickStats, setEnableClickStats] = useState(true)
 
     // 外观设置
-    const [primaryColor, setPrimaryColor] = useState("#7c3aed")
+    const [primaryColor, setPrimaryColor] = useState("#1a1a1f")
     const [themeMode, setThemeMode] = useState<"light" | "dark" | "system">("system")
 
     // 数据管理
@@ -93,7 +96,6 @@ export default function AdminSettingsPage() {
                 setEnableClickStats(settings.links.enableClickStats)
                 // 外观设置
                 setPrimaryColor(settings.appearance.primaryColor)
-                setThemeMode(settings.appearance.themeMode)
                 // 数据管理
                 setAutoCleanExpired(settings.data.autoCleanExpired)
                 setExpiredDays(settings.data.expiredDays)
@@ -113,6 +115,13 @@ export default function AdminSettingsPage() {
         }
         loadSettings()
     }, [router, setGlobalLoading])
+
+    // 同步当前实际主题到选择器
+    useEffect(() => {
+        if (theme) {
+            setThemeMode(theme as "light" | "dark" | "system")
+        }
+    }, [theme])
 
     const handleSave = async () => {
         // 验证短码长度
@@ -393,7 +402,21 @@ export default function AdminSettingsPage() {
                                     </p>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                    <code className="bg-muted px-2 py-1 rounded font-mono text-sm">{primaryColor}</code>
+                                    <Input
+                                        value={primaryColor}
+                                        onChange={(e) => {
+                                            const color = e.target.value
+                                            setPrimaryColor(color)
+                                            // 验证是否为有效的 HEX 颜色
+                                            if (/^#[0-9A-Fa-f]{6}$/.test(color)) {
+                                                const colors = generatePrimaryColors(color)
+                                                document.documentElement.style.setProperty('--primary', colors.primary)
+                                                document.documentElement.style.setProperty('--primary-foreground', colors.primaryForeground)
+                                            }
+                                        }}
+                                        className="w-24 font-mono text-sm"
+                                        placeholder="#1a1a1f"
+                                    />
                                     <label className="relative cursor-pointer">
                                         <div
                                             className="h-10 w-10 rounded-lg border-2 border-border hover:border-foreground/50 transition-colors cursor-pointer"
@@ -402,7 +425,14 @@ export default function AdminSettingsPage() {
                                         <input
                                             type="color"
                                             value={primaryColor}
-                                            onChange={(e) => setPrimaryColor(e.target.value)}
+                                            onChange={(e) => {
+                                                const color = e.target.value
+                                                setPrimaryColor(color)
+                                                // 实时预览主题色
+                                                const colors = generatePrimaryColors(color)
+                                                document.documentElement.style.setProperty('--primary', colors.primary)
+                                                document.documentElement.style.setProperty('--primary-foreground', colors.primaryForeground)
+                                            }}
                                             className="absolute inset-0 opacity-0 cursor-pointer"
                                         />
                                     </label>
@@ -421,7 +451,11 @@ export default function AdminSettingsPage() {
                                         }
                                     </p>
                                 </div>
-                                <Select value={themeMode} onValueChange={(value) => setThemeMode(value as "light" | "dark" | "system")}>
+                                <Select value={themeMode} onValueChange={(value) => {
+                                    const mode = value as "light" | "dark" | "system"
+                                    setThemeMode(mode)
+                                    setTheme(mode) // 立即切换主题
+                                }}>
                                     <SelectTrigger className="w-[140px]">
                                         <SelectValue />
                                     </SelectTrigger>

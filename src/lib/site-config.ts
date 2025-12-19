@@ -51,3 +51,38 @@ export async function getSiteConfig(): Promise<SiteConfig> {
 // 别名，保持兼容性
 export const getCachedSiteConfig = getSiteConfig
 
+// 外观设置类型
+export interface AppearanceConfig {
+    primaryColor: string
+    themeMode: 'light' | 'dark' | 'system'
+}
+
+// 默认外观设置
+const defaultAppearanceConfig: AppearanceConfig = {
+    primaryColor: "#1a1a1f",
+    themeMode: "system"
+}
+
+// 获取外观配置（用于服务端组件）
+export async function getAppearanceConfig(): Promise<AppearanceConfig> {
+    try {
+        const supabase = await createClient()
+
+        const { data, error } = await supabase
+            .from('settings')
+            .select('value')
+            .eq('key', 'appearance')
+            .single()
+
+        if (error || !data) {
+            return defaultAppearanceConfig
+        }
+
+        return {
+            ...defaultAppearanceConfig,
+            ...data.value
+        }
+    } catch {
+        return defaultAppearanceConfig
+    }
+}
