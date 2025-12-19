@@ -194,7 +194,8 @@ insert into public.settings (key, value, description) values
   ('appearance', '{"primaryColor": "#1a1a1f", "themeMode": "system"}', '外观设置'),
   ('data', '{"autoCleanExpired": false, "expiredDays": 90}', '数据管理'),
   ('maintenance', '{"enabled": false, "message": ""}', '维护模式'),
-  ('security', '{"turnstileEnabled": false, "turnstileSiteKey": "", "turnstileSecretKey": "", "safeBrowsingEnabled": false, "safeBrowsingApiKey": ""}', '安全设置 - 人机验证与链接安全检测');
+  ('security', '{"turnstileEnabled": false, "turnstileSiteKey": "", "turnstileSecretKey": "", "safeBrowsingEnabled": false, "safeBrowsingApiKey": ""}', '安全设置 - 人机验证与链接安全检测'),
+  ('announcement', '{"enabled": false, "content": "", "type": "default", "duration": 5000}', '公告设置');
 
   -- 允许 user_id 和 user_email 为空（支持匿名用户）
 ALTER TABLE links ALTER COLUMN user_id DROP NOT NULL;

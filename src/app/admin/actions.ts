@@ -3,6 +3,7 @@
 import { createClient } from "@/utils/supabase/server"
 import { revalidatePath } from "next/cache"
 import { getFriendlyErrorMessage } from "@/utils/error-mapping"
+import { AnnouncementConfig } from "@/lib/site-config"
 
 // 设置类型定义
 export interface SiteSettings {
@@ -14,9 +15,6 @@ export interface SiteSettings {
     authorUrl: string
     allowPublicShorten: boolean
     openRegistration: boolean
-    announcementEnabled: boolean
-    announcementTitle: string
-    announcementContent: string
 }
 
 export interface LinksSettings {
@@ -59,6 +57,7 @@ export interface AllSettings {
     data: DataSettings
     maintenance: MaintenanceSettings
     security: SecuritySettings
+    announcement: AnnouncementConfig
 }
 
 // 管理员删除链接 Action (不限制 user_id)
@@ -143,10 +142,7 @@ export async function getSettings(): Promise<{ data?: AllSettings, error?: strin
                 authorName: "池鱼",
                 authorUrl: "https://chiyu.it",
                 allowPublicShorten: true,
-                openRegistration: true,
-                announcementEnabled: false,
-                announcementTitle: "",
-                announcementContent: ""
+                openRegistration: true
             },
             links: settingsMap.links || { slugLength: 6, enableClickStats: true, defaultExpiration: 0 },
             appearance: settingsMap.appearance || {
@@ -165,6 +161,12 @@ export async function getSettings(): Promise<{ data?: AllSettings, error?: strin
                 blacklistSuffix: "",
                 blacklistDomain: "",
                 skipAllChecks: false
+            },
+            announcement: settingsMap.announcement || {
+                enabled: false,
+                content: "",
+                type: "default",
+                duration: 5000
             }
         }
     }
@@ -198,7 +200,8 @@ export async function saveSettings(settings: AllSettings): Promise<{ success?: b
         { key: 'appearance', value: settings.appearance },
         { key: 'data', value: settings.data },
         { key: 'maintenance', value: settings.maintenance },
-        { key: 'security', value: settings.security }
+        { key: 'security', value: settings.security },
+        { key: 'announcement', value: settings.announcement }
     ]
 
     for (const update of updates) {

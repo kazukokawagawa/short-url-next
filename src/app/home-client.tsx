@@ -13,12 +13,17 @@ import { TextArrowIcon } from "@/components/text-arrow-icon"
 import { SmartLoading } from "@/components/smart-loading"
 import { useLoading } from "@/components/providers/loading-provider"
 
+import { toast } from "sonner"
+
+import { AnnouncementConfig } from "@/lib/site-config"
+
 interface HomeClientProps {
     siteName: string
     siteDescription: string
+    announcementConfig: AnnouncementConfig
 }
 
-export function HomeClient({ siteName, siteDescription }: HomeClientProps) {
+export function HomeClient({ siteName, siteDescription, announcementConfig }: HomeClientProps) {
     const [user, setUser] = useState<User | null>(null)
     const [loading, setLoading] = useState(true)
     const [hoveredButton, setHoveredButton] = useState<'login' | 'dashboard' | null>(null)
@@ -35,6 +40,35 @@ export function HomeClient({ siteName, siteDescription }: HomeClientProps) {
         }
         getUser()
     }, [setGlobalLoading])
+
+    // 处理公告 Toast
+    useEffect(() => {
+        if (announcementConfig.enabled && announcementConfig.content) {
+            // 延迟一点显示，以免和页面加载冲突
+            const timer = setTimeout(() => {
+                const toastOptions = {
+                    description: announcementConfig.content,
+                    duration: announcementConfig.duration || 5000,
+                }
+
+                switch (announcementConfig.type) {
+                    case "destructive":
+                        toast.error("公告", toastOptions)
+                        break
+                    case "secondary":
+                        toast.success("公告", toastOptions)
+                        break
+                    case "outline":
+                        toast.info("公告", toastOptions)
+                        break
+                    default:
+                        toast("公告", toastOptions)
+                        break
+                }
+            }, 500)
+            return () => clearTimeout(timer)
+        }
+    }, [announcementConfig])
 
     if (isGlobalLoading) return null
     if (loading) return <SmartLoading />

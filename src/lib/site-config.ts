@@ -11,6 +11,7 @@ export interface SiteConfig {
     authorName: string
     authorUrl: string
     allowPublicShorten: boolean
+    openRegistration: boolean
 }
 
 // 默认设置（用于数据库未配置时）
@@ -21,7 +22,8 @@ const defaultSiteConfig: SiteConfig = {
     keywords: "短链接,URL Shortener,Link Management,Next.js",
     authorName: "池鱼",
     authorUrl: "https://chiyu.it",
-    allowPublicShorten: true
+    allowPublicShorten: true,
+    openRegistration: true
 }
 
 // 获取站点配置（用于服务端组件和 Server Actions）
@@ -84,5 +86,45 @@ export async function getAppearanceConfig(): Promise<AppearanceConfig> {
         }
     } catch {
         return defaultAppearanceConfig
+    }
+}
+
+// 公告设置类型
+export interface AnnouncementConfig {
+    enabled: boolean
+    content: string
+    type: "default" | "destructive" | "outline" | "secondary"
+    duration?: number // duration in milliseconds, defaults to 5000 if undefined
+}
+
+// 默认公告设置
+const defaultAnnouncementConfig: AnnouncementConfig = {
+    enabled: false,
+    content: "",
+    type: "default",
+    duration: 5000
+}
+
+// 获取公告配置
+export async function getAnnouncementConfig(): Promise<AnnouncementConfig> {
+    try {
+        const supabase = await createClient()
+
+        const { data, error } = await supabase
+            .from('settings')
+            .select('value')
+            .eq('key', 'announcement')
+            .single()
+
+        if (error || !data) {
+            return defaultAnnouncementConfig
+        }
+
+        return {
+            ...defaultAnnouncementConfig,
+            ...data.value
+        }
+    } catch {
+        return defaultAnnouncementConfig
     }
 }

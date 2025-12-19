@@ -37,8 +37,9 @@ export default function AdminSettingsPage() {
     const [allowPublicShorten, setAllowPublicShorten] = useState(true)
     const [openRegistration, setOpenRegistration] = useState(true)
     const [announcementEnabled, setAnnouncementEnabled] = useState(false)
-    const [announcementTitle, setAnnouncementTitle] = useState("")
     const [announcementContent, setAnnouncementContent] = useState("")
+    const [announcementType, setAnnouncementType] = useState<"default" | "destructive" | "outline" | "secondary">("default")
+    const [announcementDuration, setAnnouncementDuration] = useState(5000)
 
     // 链接设置
     const [slugLength, setSlugLength] = useState<number | "">(6)
@@ -162,9 +163,10 @@ export default function AdminSettingsPage() {
                 setAuthorUrl(settings.site.authorUrl || "https://chiyu.it")
                 setAllowPublicShorten(settings.site.allowPublicShorten)
                 setOpenRegistration(settings.site.openRegistration ?? true)
-                setAnnouncementEnabled(settings.site.announcementEnabled ?? false)
-                setAnnouncementTitle(settings.site.announcementTitle ?? "")
-                setAnnouncementContent(settings.site.announcementContent ?? "")
+                setAnnouncementEnabled(settings.announcement.enabled)
+                setAnnouncementContent(settings.announcement.content)
+                setAnnouncementType(settings.announcement.type)
+                setAnnouncementDuration(settings.announcement.duration || 5000)
                 // 链接设置
                 setSlugLength(settings.links.slugLength)
                 setDefaultExpiration(String(settings.links.defaultExpiration || 0))
@@ -240,10 +242,7 @@ export default function AdminSettingsPage() {
                 authorName: authorName,
                 authorUrl: authorUrl,
                 allowPublicShorten: allowPublicShorten,
-                openRegistration: openRegistration,
-                announcementEnabled: announcementEnabled,
-                announcementTitle: announcementTitle,
-                announcementContent: announcementContent
+                openRegistration: openRegistration
             },
             links: {
                 slugLength: safeSlugLength,
@@ -272,6 +271,12 @@ export default function AdminSettingsPage() {
                 blacklistSuffix: blacklistSuffix,
                 blacklistDomain: blacklistDomain,
                 skipAllChecks: skipAllChecks
+            },
+            announcement: {
+                enabled: announcementEnabled,
+                content: announcementContent,
+                type: announcementType,
+                duration: announcementDuration
             }
         }
 
@@ -455,18 +460,6 @@ export default function AdminSettingsPage() {
                                 <div className="space-y-4 rounded-lg border p-4 bg-muted/30">
                                     <div className="space-y-2">
                                         <div className="flex items-center gap-2">
-                                            <Heading className="h-4 w-4 text-muted-foreground" />
-                                            <Label htmlFor="announcementTitle">公告标题</Label>
-                                        </div>
-                                        <Input
-                                            id="announcementTitle"
-                                            value={announcementTitle}
-                                            onChange={(e) => setAnnouncementTitle(e.target.value)}
-                                            placeholder="输入公告标题"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <div className="flex items-center gap-2">
                                             <AlignLeft className="h-4 w-4 text-muted-foreground" />
                                             <Label htmlFor="announcementContent">公告内容</Label>
                                         </div>
@@ -474,9 +467,50 @@ export default function AdminSettingsPage() {
                                             id="announcementContent"
                                             value={announcementContent}
                                             onChange={(e) => setAnnouncementContent(e.target.value)}
-                                            placeholder="支持 HTML 格式内容"
-                                            className="min-h-[100px]"
+                                            placeholder="输入公告内容"
+                                            className="min-h-[80px]"
                                         />
+                                    </div>
+
+                                    <div className="grid gap-6 md:grid-cols-2 bg-muted/30 p-4 rounded-lg">
+                                        <div className="space-y-3">
+                                            <div className="flex items-center gap-2 h-5">
+                                                <Palette className="h-4 w-4 text-muted-foreground" />
+                                                <Label>公告类型</Label>
+                                            </div>
+                                            <Select value={announcementType} onValueChange={(v: any) => setAnnouncementType(v)}>
+                                                <SelectTrigger className="bg-background">
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="default">默认 (蓝色/火箭)</SelectItem>
+                                                    <SelectItem value="destructive">警告 (红色/警示)</SelectItem>
+                                                    <SelectItem value="outline">提示 (边框/信息)</SelectItem>
+                                                    <SelectItem value="secondary">次要 (灰色/打钩)</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+
+                                        <div className="space-y-3">
+                                            <div className="flex items-center justify-between h-5">
+                                                <div className="flex items-center gap-2">
+                                                    <Clock className="h-4 w-4 text-muted-foreground" />
+                                                    <Label>显示时长</Label>
+                                                </div>
+                                                <span className="text-sm font-mono bg-background px-2 py-0.5 rounded border text-muted-foreground">{announcementDuration / 1000}s</span>
+                                            </div>
+                                            <div className="flex items-center h-10 px-1">
+                                                <Input
+                                                    type="range"
+                                                    value={announcementDuration}
+                                                    onChange={(e) => setAnnouncementDuration(Number(e.target.value))}
+                                                    min={2000}
+                                                    max={30000}
+                                                    step={1000}
+                                                    className="cursor-pointer"
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             )}
