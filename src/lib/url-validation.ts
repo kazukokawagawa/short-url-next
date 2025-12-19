@@ -19,7 +19,26 @@ export interface UrlValidationResult {
 export interface SlugValidationResult {
     valid: boolean
     error?: string
-    errorCode?: 'SLUG_BLOCKED'
+    errorCode?: 'SLUG_BLOCKED' | 'SLUG_INVALID_FORMAT'
+}
+
+/**
+ * 验证 slug 格式
+ * 只允许：大小写字母、数字、连字符、下划线
+ */
+export async function validateSlugFormat(slug: string): Promise<SlugValidationResult> {
+    if (!slug) return { valid: true }
+
+    const slugRegex = /^[a-zA-Z0-9_-]+$/
+    if (!slugRegex.test(slug)) {
+        return {
+            valid: false,
+            error: '自定义后缀只能包含字母、数字、连字符和下划线',
+            errorCode: 'SLUG_INVALID_FORMAT'
+        }
+    }
+
+    return { valid: true }
 }
 
 /**
@@ -50,6 +69,30 @@ export async function validateSlugBlacklist(slug: string): Promise<SlugValidatio
 
     return { valid: true }
 }
+
+/**
+ * 完整的 Slug 验证（格式 + 黑名单）
+ * 用于统一替代分散的 slug 验证逻辑
+ */
+export async function validateSlug(slug: string): Promise<SlugValidationResult> {
+    // 1. 空值直接通过
+    if (!slug) return { valid: true }
+
+    // 2. 格式验证
+    const formatResult = await validateSlugFormat(slug)
+    if (!formatResult.valid) {
+        return formatResult
+    }
+
+    // 3. 黑名单验证
+    const blacklistResult = await validateSlugBlacklist(slug)
+    if (!blacklistResult.valid) {
+        return blacklistResult
+    }
+
+    return { valid: true }
+}
+
 
 /**
  * 检查 URL 可用性

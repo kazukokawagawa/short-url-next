@@ -1,71 +1,51 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/utils/supabase/server'
 import { nanoid } from 'nanoid'
-import bcrypt from 'bcryptjs'
+
+import { getSiteConfig, getLinksConfig } from '@/lib/site-config'
+import { validateUrl, validateSlug } from '@/lib/url-validation'
+import { processLinkPassword } from '@/lib/password'
+import { checkPublicAccess } from '@/utils/auth'
 
 export async function POST(request: Request) {
     const { url, slug, expiresAt, passwordType, password } = await request.json()
     const supabase = await createClient()
 
-    // 1. 检查登录状态
-    const { data: { user } } = await supabase.auth.getUser()
-
-    // 获取站点设置，检查是否允许公开缩短
-    const { data: siteSettings } = await supabase
-        .from('settings')
-        .select('value')
-        .eq('key', 'site')
-        .single()
-
-    const allowPublicShorten = siteSettings?.value?.allowPublicShorten ?? true
-
-    // 如果不允许公开缩短且用户未登录，返回 401
-    if (!user && !allowPublicShorten) {
+    // 使用统一的认证检查
+    const siteConfig = await getSiteConfig()
+    const authResult = await checkPublicAccess(supabase, siteConfig.allowPublicShorten)
+    if (authResult.error) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+    const user = authResult.user
 
     if (!url) return NextResponse.json({ error: 'URL is required' }, { status: 400 })
 
     // --- URL 格式验证 ---
     try {
         const urlObject = new URL(url)
-        // 只允许 http 和 https 协议
         if (!['http:', 'https:'].includes(urlObject.protocol)) {
             return NextResponse.json({
                 error: 'Invalid URL protocol. Only HTTP and HTTPS are allowed.'
             }, { status: 400 })
         }
-    } catch (error) {
+    } catch {
         return NextResponse.json({
             error: 'Invalid URL format. Please enter a valid URL starting with http:// or https://'
         }, { status: 400 })
     }
-    // ---------------------
 
-    // --- Slug 字符验证 ---
-    // 允许：大小写字母 (a-z, A-Z)、数字 (0-9)、连字符 (-)、下划线 (_)
-    const slugRegex = /^[a-zA-Z0-9_-]+$/
-    if (slug && !slugRegex.test(slug)) {
-        return NextResponse.json({
-            error: 'Invalid custom alias. Only letters, numbers, hyphens (-), and underscores (_) are allowed.'
-        }, { status: 400 })
-    }
-    // -----------------------
-
-    // --- Slug 黑名单验证 ---
+    // --- Slug 验证（格式 + 黑名单）---
     if (slug) {
-        const { validateSlugBlacklist } = await import('@/lib/url-validation')
-        const slugValidation = await validateSlugBlacklist(slug)
+        const slugValidation = await validateSlug(slug)
         if (!slugValidation.valid) {
             return NextResponse.json({
                 error: slugValidation.errorCode || slugValidation.error
             }, { status: 400 })
         }
     }
-    // -----------------------
 
-    // --- Safe Browsing + 可访问性检查 (使用共享函数) ---
-    const { validateUrl } = await import('@/lib/url-validation')
+    // --- Safe Browsing + 可访问性检查 ---
     const validationResult = await validateUrl(url, { logPrefix: '[API/shorten]' })
 
     if (!validationResult.valid) {
@@ -76,66 +56,28 @@ export async function POST(request: Request) {
         }, { status: 400 })
     }
 
-
-    // 如果用户提供了 slug，就用用户的；否则生成一个新的
-    let slugLength = 6
-    const { data: linksSettings, error: settingsError } = await supabase
-        .from('settings')
-        .select('value')
-        .eq('key', 'links')
-        .single()
-
-    // 🔍 调试日志
-    console.log('--- Slug Length Debug ---')
-    console.log('Settings Error:', settingsError)
-    console.log('Raw linksSettings:', linksSettings)
-    console.log('linksSettings.value:', linksSettings?.value)
-    console.log('typeof value:', typeof linksSettings?.value)
-    console.log('slugLength in value:', linksSettings?.value?.slugLength)
-
-    let defaultExpiration = 0
-    if (linksSettings?.value?.slugLength) {
-        slugLength = Number(linksSettings.value.slugLength) || 6
-        defaultExpiration = Number(linksSettings.value.defaultExpiration) || 0
-    }
-
-    console.log('Final slugLength:', slugLength)
-    console.log('Default Expiration:', defaultExpiration)
-    console.log('-------------------------')
-
-    const finalSlug = slug || nanoid(slugLength)
+    // 使用统一的设置获取函数
+    const linksConfig = await getLinksConfig()
+    const finalSlug = slug || nanoid(linksConfig.slugLength)
 
     // 计算过期时间
     let finalExpiresAt = null
 
     if (expiresAt) {
         finalExpiresAt = expiresAt
-    } else if (defaultExpiration > 0) {
+    } else if (linksConfig.defaultExpiration > 0) {
         const date = new Date()
-        date.setMinutes(date.getMinutes() + defaultExpiration)
+        date.setMinutes(date.getMinutes() + linksConfig.defaultExpiration)
         finalExpiresAt = date.toISOString()
     }
 
-    // 密码处理
-    let passwordHash: string | null = null
-    const finalPasswordType = passwordType || 'none'
-
-    if (passwordType && passwordType !== 'none' && password) {
-        // 验证6位密码必须是纯数字
-        if (passwordType === 'six_digit') {
-            if (!/^\d{6}$/.test(password)) {
-                return NextResponse.json({ error: '6位密码必须是纯数字' }, { status: 400 })
-            }
-        }
-        // 自定义口令长度限制
-        if (passwordType === 'custom' && password.length > 128) {
-            return NextResponse.json({ error: '自定义口令最长128位' }, { status: 400 })
-        }
-        // 哈希密码
-        passwordHash = await bcrypt.hash(password, 10)
+    // 使用统一的密码处理
+    const passwordResult = await processLinkPassword(passwordType || 'none', password || '')
+    if (passwordResult.error) {
+        return NextResponse.json({ error: passwordResult.error }, { status: 400 })
     }
 
-    // 2. 插入数据
+    // 插入数据
     const { data, error } = await supabase
         .from('links')
         .insert([{
@@ -144,8 +86,8 @@ export async function POST(request: Request) {
             user_id: user?.id ?? null,
             user_email: user?.email ?? null,
             expires_at: finalExpiresAt,
-            password_type: finalPasswordType,
-            password_hash: passwordHash
+            password_type: passwordType || 'none',
+            password_hash: passwordResult.hash
         }])
         .select()
         .single()

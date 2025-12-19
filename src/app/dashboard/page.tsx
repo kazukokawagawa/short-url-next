@@ -63,8 +63,8 @@ export default function Dashboard() {
 
             // 获取链接设置
             const settings = await getLinkSettings()
-            if (settings && !settings.error) {
-                setEnableClickStats(settings.enableClickStats)
+            if (settings && !settings.error && 'enableClickStats' in settings) {
+                setEnableClickStats(settings.enableClickStats ?? true)
             }
 
             setLinks(linksData || [])

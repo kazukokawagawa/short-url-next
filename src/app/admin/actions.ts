@@ -3,92 +3,61 @@
 import { createClient } from "@/utils/supabase/server"
 import { revalidatePath } from "next/cache"
 import { getFriendlyErrorMessage } from "@/utils/error-mapping"
+import { requireAuth } from "@/utils/auth"
 
-// 设置类型定义
-export interface AnnouncementConfig {
-    enabled: boolean
-    content: string
-    type: "default" | "destructive" | "outline" | "secondary"
-    duration?: number
-}
+// 从统一类型文件导入
+import {
+    SiteSettings,
+    LinksSettings,
+    AppearanceSettings,
+    DataSettings,
+    MaintenanceSettings,
+    SecuritySettings,
+    AnnouncementConfig,
+    AllSettings,
+    defaultSiteSettings,
+    defaultLinksSettings,
+    defaultAppearanceSettings,
+    defaultDataSettings,
+    defaultMaintenanceSettings,
+    defaultSecuritySettings,
+    defaultAnnouncementConfig
+} from "@/types/settings"
 
-export interface SiteSettings {
-    name: string
-    subtitle: string
-    description: string
-    keywords: string
-    authorName: string
-    authorUrl: string
-    allowPublicShorten: boolean
-    openRegistration: boolean
-}
-
-export interface LinksSettings {
-    slugLength: number
-    enableClickStats: boolean
-    defaultExpiration?: number // 默认过期时间（分钟），0或undefined表示永不过期
-}
-
-export interface AppearanceSettings {
-    primaryColor: string
-    themeMode: 'light' | 'dark' | 'system'
-    toastPosition: 'top-right' | 'top-center' | 'bottom-right' | 'bottom-center'
-}
-
-export interface DataSettings {
-    autoCleanExpired: boolean
-    expiredDays: number
-}
-
-export interface MaintenanceSettings {
-    enabled: boolean
-    message: string
-}
-
-export interface SecuritySettings {
-    turnstileEnabled: boolean
-    turnstileSiteKey: string
-    turnstileSecretKey: string
-    safeBrowsingEnabled: boolean
-    safeBrowsingApiKey: string
-    blacklistSuffix: string
-    blacklistDomain: string
-    blacklistSlug: string
-    skipAllChecks: boolean
-}
-
-export interface AllSettings {
-    site: SiteSettings
-    links: LinksSettings
-    appearance: AppearanceSettings
-    data: DataSettings
-    maintenance: MaintenanceSettings
-    security: SecuritySettings
-    announcement: AnnouncementConfig
+// 重新导出类型供其他模块使用
+export type {
+    SiteSettings,
+    LinksSettings,
+    AppearanceSettings,
+    DataSettings,
+    MaintenanceSettings,
+    SecuritySettings,
+    AnnouncementConfig,
+    AllSettings
 }
 
 // 管理员删除链接 Action (不限制 user_id)
 export async function adminDeleteLink(id: number) {
     const supabase = await createClient()
 
-    // 1. 验证用户身份
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-        return { error: "User not authenticated", needsLogin: true }
+    // 使用统一的认证检查
+    const authResult = await requireAuth(supabase)
+    if (authResult.error) {
+        return { error: authResult.error, needsLogin: authResult.needsLogin }
     }
 
-    // 2. 验证管理员权限
+    // 验证管理员权限
     const { data: profile } = await supabase
         .from('profiles')
         .select('role')
-        .eq('id', user.id)
+        .eq('id', authResult.user!.id)
         .single()
 
     if (profile?.role !== 'admin') {
         return { error: "Unauthorized: Admin access required" }
     }
 
-    // 3. 执行删除 (不检查 user_id，管理员可以删除任何链接)
+    // 执行删除 (不检查 user_id，管理员可以删除任何链接)
     const { error } = await supabase
         .from('links')
         .delete()
@@ -106,17 +75,17 @@ export async function adminDeleteLink(id: number) {
 export async function getSettings(): Promise<{ data?: AllSettings, error?: string, needsLogin?: boolean }> {
     const supabase = await createClient()
 
-    // 验证用户身份
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-        return { error: "User not authenticated", needsLogin: true }
+    // 使用统一的认证检查
+    const authResult = await requireAuth(supabase)
+    if (authResult.error) {
+        return { error: authResult.error, needsLogin: authResult.needsLogin }
     }
 
     // 验证管理员权限
     const { data: profile } = await supabase
         .from('profiles')
         .select('role')
-        .eq('id', user.id)
+        .eq('id', authResult.user!.id)
         .single()
 
     if (profile?.role !== 'admin') {
@@ -133,49 +102,21 @@ export async function getSettings(): Promise<{ data?: AllSettings, error?: strin
     }
 
     // 转换为对象格式
-    const settingsMap: Record<string, any> = {}
+    const settingsMap: Record<string, unknown> = {}
     settings?.forEach(item => {
         settingsMap[item.key] = item.value
     })
 
-    // 返回设置，使用默认值填充缺失项
+    // 返回设置，使用统一的默认值
     return {
         data: {
-            site: settingsMap.site || {
-                name: "LinkFlow",
-                subtitle: "下一代短链接生成器",
-                description: "让链接更短，让分享更简单",
-                keywords: "短链接,URL Shortener,Link Management,Next.js",
-                authorName: "池鱼",
-                authorUrl: "https://chiyu.it",
-                allowPublicShorten: true,
-                openRegistration: true
-            },
-            links: settingsMap.links || { slugLength: 6, enableClickStats: true, defaultExpiration: 0 },
-            appearance: settingsMap.appearance || {
-                primaryColor: "#1a1a1f",
-                themeMode: "system",
-                toastPosition: "bottom-right"
-            },
-            data: settingsMap.data || { autoCleanExpired: false, expiredDays: 90 },
-            maintenance: settingsMap.maintenance || { enabled: false, message: "" },
-            security: settingsMap.security || {
-                turnstileEnabled: false,
-                turnstileSiteKey: "",
-                turnstileSecretKey: "",
-                safeBrowsingEnabled: false,
-                safeBrowsingApiKey: "",
-                blacklistSuffix: "",
-                blacklistDomain: "",
-                blacklistSlug: "",
-                skipAllChecks: false
-            },
-            announcement: settingsMap.announcement || {
-                enabled: false,
-                content: "",
-                type: "default",
-                duration: 5000
-            }
+            site: (settingsMap.site as SiteSettings) || defaultSiteSettings,
+            links: (settingsMap.links as LinksSettings) || defaultLinksSettings,
+            appearance: (settingsMap.appearance as AppearanceSettings) || defaultAppearanceSettings,
+            data: (settingsMap.data as DataSettings) || defaultDataSettings,
+            maintenance: (settingsMap.maintenance as MaintenanceSettings) || defaultMaintenanceSettings,
+            security: (settingsMap.security as SecuritySettings) || defaultSecuritySettings,
+            announcement: (settingsMap.announcement as AnnouncementConfig) || defaultAnnouncementConfig
         }
     }
 }
@@ -184,17 +125,17 @@ export async function getSettings(): Promise<{ data?: AllSettings, error?: strin
 export async function saveSettings(settings: AllSettings): Promise<{ success?: boolean, error?: string, needsLogin?: boolean }> {
     const supabase = await createClient()
 
-    // 验证用户身份
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-        return { error: "User not authenticated", needsLogin: true }
+    // 使用统一的认证检查
+    const authResult = await requireAuth(supabase)
+    if (authResult.error) {
+        return { error: authResult.error, needsLogin: authResult.needsLogin }
     }
 
     // 验证管理员权限
     const { data: profile } = await supabase
         .from('profiles')
         .select('role')
-        .eq('id', user.id)
+        .eq('id', authResult.user!.id)
         .single()
 
     if (profile?.role !== 'admin') {
@@ -279,24 +220,24 @@ export async function getPublicSecuritySettings(): Promise<{ enabled: boolean, s
 export async function cleanExpiredLinks() {
     const supabase = await createClient()
 
-    // 1. 验证用户身份
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-        return { error: "User not authenticated", needsLogin: true }
+    // 使用统一的认证检查
+    const authResult = await requireAuth(supabase)
+    if (authResult.error) {
+        return { error: authResult.error, needsLogin: authResult.needsLogin }
     }
 
-    // 2. 验证管理员权限
+    // 验证管理员权限
     const { data: profile } = await supabase
         .from('profiles')
         .select('role')
-        .eq('id', user.id)
+        .eq('id', authResult.user!.id)
         .single()
 
     if (profile?.role !== 'admin') {
         return { error: "Unauthorized: Admin access required" }
     }
 
-    // 3. 执行清理
+    // 执行清理
     const now = new Date().toISOString()
     const { error, count } = await supabase
         .from('links')

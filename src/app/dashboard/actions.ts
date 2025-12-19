@@ -6,12 +6,14 @@ import { redirect } from "next/navigation"
 import { nanoid } from "nanoid"
 import { getFriendlyErrorMessage } from "@/utils/error-mapping"
 import { headers } from "next/headers"
-import bcrypt from 'bcryptjs'
 
-import { retryQuery } from "@/utils/retry"
+import { requireAuth, checkPublicAccess } from "@/utils/auth"
+import { processLinkPassword } from "@/lib/password"
+import { getSiteConfig, getLinksConfig } from "@/lib/site-config"
+import { validateUrl, validateSlug } from "@/lib/url-validation"
 
-// 1. 简单的格式校验
-function isValidUrl(url: string) {
+// 简单的 URL 格式校验
+function isValidUrlFormat(url: string): boolean {
     try {
         const parsed = new URL(url)
         return parsed.protocol === "http:" || parsed.protocol === "https:"
@@ -24,57 +26,24 @@ function isValidUrl(url: string) {
 export async function createLink(formData: FormData) {
     const supabase = await createClient()
 
-    // 获取当前用户
-    const { data: { user } } = await supabase.auth.getUser()
-
-    // 获取站点设置，检查是否允许公开缩短
-    const { data: siteSettings } = await supabase
-        .from('settings')
-        .select('value')
-        .eq('key', 'site')
-        .single()
-
-    const allowPublicShorten = siteSettings?.value?.allowPublicShorten ?? true
-
-    // 如果不允许公开缩短且用户未登录，返回需要登录标记
-    if (!user && !allowPublicShorten) {
-        return { error: "User not authenticated", needsLogin: true }
+    // 使用统一的认证检查
+    const siteConfig = await getSiteConfig()
+    const authResult = await checkPublicAccess(supabase, siteConfig.allowPublicShorten)
+    if (authResult.error) {
+        return { error: authResult.error, needsLogin: authResult.needsLogin }
     }
+    const user = authResult.user
 
     const url = formData.get('url') as string
     const customSlug = formData.get('slug') as string
-    const isNoIndex = formData.get('isNoIndex') === 'true' // 获取 isNoIndex 参数
+    const isNoIndex = formData.get('isNoIndex') === 'true'
 
-    // 获取配置的短码长度（带自动重试）
-    let slugLength = 6
-    const { data: linksSettings, error: settingsError } = await retryQuery<{ value: any }>(() =>
-        supabase
-            .from('settings')
-            .select('value')
-            .eq('key', 'links')
-            .single()
-    )
-
-    // 🔍 调试日志
-    console.log('--- createLink Debug ---')
-    console.log('settingsError:', settingsError)
-    console.log('linksSettings:', JSON.stringify(linksSettings))
-    console.log('linksSettings?.value:', linksSettings?.value)
-    console.log('typeof value:', typeof linksSettings?.value)
-    console.log('slugLength in value:', linksSettings?.value?.slugLength)
-
-    if (linksSettings?.value?.slugLength) {
-        slugLength = Number(linksSettings.value.slugLength) || 6
-    }
-
-    console.log('Final slugLength:', slugLength)
-    console.log('------------------------')
-
-    // 如果用户提供了自定义短码就用，否则生成配置长度的随机短码
-    const slug = customSlug || nanoid(slugLength)
+    // 使用统一的设置获取函数
+    const linksConfig = await getLinksConfig()
+    const slug = customSlug || nanoid(linksConfig.slugLength)
 
     // --- 格式检查 ---
-    if (!url || !isValidUrl(url)) {
+    if (!url || !isValidUrlFormat(url)) {
         return { error: "请输入以 http:// 或 https:// 开头的有效网址" }
     }
 
@@ -85,10 +54,9 @@ export async function createLink(formData: FormData) {
         return { error: "不能缩短本站的链接" }
     }
 
-    // --- Slug 黑名单验证 ---
+    // --- Slug 验证（格式 + 黑名单）---
     if (customSlug) {
-        const { validateSlugBlacklist } = await import('@/lib/url-validation')
-        const slugValidation = await validateSlugBlacklist(customSlug)
+        const slugValidation = await validateSlug(customSlug)
         if (!slugValidation.valid) {
             return { error: slugValidation.errorCode || slugValidation.error }
         }
@@ -101,12 +69,10 @@ export async function createLink(formData: FormData) {
     }
 
 
-    // --- Safe Browsing + 可用性检查 (使用共享函数) ---
-    const { validateUrl } = await import('@/lib/url-validation')
+    // --- Safe Browsing + 可用性检查 ---
     const validationResult = await validateUrl(url, { logPrefix: '[createLink]' })
 
     if (!validationResult.valid) {
-        // 返回具体的错误码，让前端可以显示对应的 toast
         return {
             error: validationResult.errorCode || validationResult.error || "验证失败",
             threats: validationResult.threats,
@@ -127,10 +93,8 @@ export async function createLink(formData: FormData) {
             password_hash: await (async () => {
                 const passwordType = formData.get('passwordType') as string
                 const password = formData.get('password') as string
-                if (passwordType && passwordType !== 'none' && password) {
-                    return await bcrypt.hash(password, 10)
-                }
-                return null
+                const result = await processLinkPassword(passwordType, password)
+                return result.hash
             })()
         })
 
@@ -147,20 +111,17 @@ export async function createLink(formData: FormData) {
 export async function getLinkSettings() {
     const supabase = await createClient()
 
-    // 获取当前用户 (验证登录)
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-        return { error: "User not authenticated" }
+    // 使用统一的认证检查
+    const authResult = await requireAuth(supabase)
+    if (authResult.error) {
+        return { error: authResult.error }
     }
 
-    const { data: linksSettings } = await supabase
-        .from('settings')
-        .select('value')
-        .eq('key', 'links')
-        .single()
+    // 使用统一的设置获取
+    const linksConfig = await getLinksConfig()
 
     return {
-        enableClickStats: linksSettings?.value?.enableClickStats ?? true
+        enableClickStats: linksConfig.enableClickStats
     }
 }
 
@@ -175,17 +136,17 @@ export async function signOut() {
 export async function deleteLink(id: number) {
     const supabase = await createClient()
 
-    const { data: { user } } = await supabase.auth.getUser()
-    // 🔴 修改点
-    if (!user) {
-        return { error: "User not authenticated", needsLogin: true }
+    // 使用统一的认证检查
+    const authResult = await requireAuth(supabase)
+    if (authResult.error) {
+        return { error: authResult.error, needsLogin: authResult.needsLogin }
     }
 
     const { error } = await supabase
         .from('links')
         .delete()
         .eq('id', id)
-        .eq('user_id', user.id)
+        .eq('user_id', authResult.user!.id)
 
     if (error) {
         return { error: getFriendlyErrorMessage(error) }
@@ -203,36 +164,26 @@ export async function updateLinkPassword(
 ) {
     const supabase = await createClient()
 
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-        return { error: "User not authenticated", needsLogin: true }
+    // 使用统一的认证检查
+    const authResult = await requireAuth(supabase)
+    if (authResult.error) {
+        return { error: authResult.error, needsLogin: authResult.needsLogin }
     }
 
-    // 验证密码格式
-    if (passwordType === 'six_digit' && password.length !== 6) {
-        return { error: "6位数字密码必须是6位" }
-    }
-    if (passwordType === 'custom' && password.length === 0) {
-        return { error: "自定义口令不能为空" }
-    }
-    if (passwordType === 'custom' && password.length > 128) {
-        return { error: "自定义口令最长128位" }
-    }
-
-    // 计算密码哈希
-    let passwordHash: string | null = null
-    if (passwordType !== 'none' && password) {
-        passwordHash = await bcrypt.hash(password, 10)
+    // 使用统一的密码处理
+    const passwordResult = await processLinkPassword(passwordType, password)
+    if (passwordResult.error) {
+        return { error: passwordResult.error }
     }
 
     const { error } = await supabase
         .from('links')
         .update({
             password_type: passwordType,
-            password_hash: passwordHash
+            password_hash: passwordResult.hash
         })
         .eq('id', linkId)
-        .eq('user_id', user.id)
+        .eq('user_id', authResult.user!.id)
 
     if (error) {
         return { error: getFriendlyErrorMessage(error) }

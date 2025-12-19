@@ -91,6 +91,47 @@ export async function getAppearanceConfig(): Promise<AppearanceConfig> {
     }
 }
 
+// 链接设置类型
+export interface LinksConfig {
+    slugLength: number
+    enableClickStats: boolean
+    defaultExpiration: number
+}
+
+// 默认链接设置
+const defaultLinksConfig: LinksConfig = {
+    slugLength: 6,
+    enableClickStats: true,
+    defaultExpiration: 0
+}
+
+// 获取链接配置
+export async function getLinksConfig(): Promise<LinksConfig> {
+    try {
+        const supabase = await createClient()
+
+        const { data, error } = await supabase
+            .from('settings')
+            .select('value')
+            .eq('key', 'links')
+            .single()
+
+        if (error || !data) {
+            return defaultLinksConfig
+        }
+
+        return {
+            ...defaultLinksConfig,
+            slugLength: Number(data.value?.slugLength) || defaultLinksConfig.slugLength,
+            enableClickStats: data.value?.enableClickStats ?? defaultLinksConfig.enableClickStats,
+            defaultExpiration: Number(data.value?.defaultExpiration) || defaultLinksConfig.defaultExpiration
+        }
+    } catch {
+        return defaultLinksConfig
+    }
+}
+
+
 // 公告设置类型
 export interface AnnouncementConfig {
     enabled: boolean
