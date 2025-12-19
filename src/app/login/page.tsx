@@ -198,7 +198,7 @@ export default function LoginPage(props: {
                             <div className="space-y-2">
                                 {/* 给 Label 加红星提示 (可选) */}
                                 <Label htmlFor="email" className={errors.email ? "text-red-500" : ""}>
-                                    Email
+                                    邮箱
                                 </Label>
                                 <Input
                                     id="email"
@@ -220,7 +220,7 @@ export default function LoginPage(props: {
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="password" className={errors.password ? "text-red-500" : ""}>
-                                    Password
+                                    密码
                                 </Label>
                                 <Input
                                     id="password"

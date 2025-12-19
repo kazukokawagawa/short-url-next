@@ -6,16 +6,32 @@ import { Check, Copy } from "lucide-react"
 import { ActionScale } from "@/components/action-scale"
 import { motion, AnimatePresence } from "framer-motion"
 
-export function CopyButton({ slug }: { slug: string }) { // 改为接收 slug
+export function CopyButton({ slug }: { slug: string }) {
     const [hasCopied, setHasCopied] = useState(false)
 
-    const onCopy = () => {
-        // 动态获取当前域名 (例如 http://localhost:3000 或 https://你的域名.com)
+    const onCopy = async () => {
         const fullUrl = `${window.location.origin}/${slug}`
 
-        navigator.clipboard.writeText(fullUrl)
-        setHasCopied(true)
-        setTimeout(() => setHasCopied(false), 2000)
+        try {
+            // 优先使用现代 Clipboard API
+            if (navigator?.clipboard?.writeText) {
+                await navigator.clipboard.writeText(fullUrl)
+            } else {
+                // Fallback: 使用传统方法
+                const textArea = document.createElement('textarea')
+                textArea.value = fullUrl
+                textArea.style.position = 'fixed'
+                textArea.style.opacity = '0'
+                document.body.appendChild(textArea)
+                textArea.select()
+                document.execCommand('copy')
+                document.body.removeChild(textArea)
+            }
+            setHasCopied(true)
+            setTimeout(() => setHasCopied(false), 2000)
+        } catch (err) {
+            console.error('Failed to copy:', err)
+        }
     }
 
     return (
