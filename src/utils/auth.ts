@@ -42,7 +42,7 @@ export async function requireAuth(supabase: SupabaseClient): Promise<AuthResult>
 
     if (!user) {
         return {
-            error: "User not authenticated",
+            error: "用户未登录",
             needsLogin: true
         }
     }
@@ -97,7 +97,7 @@ export async function checkPublicAccess(
     // 如果不允许公开操作且用户未登录
     if (!user && !allowPublic) {
         return {
-            error: "User not authenticated",
+            error: "用户未登录",
             needsLogin: true
         }
     }

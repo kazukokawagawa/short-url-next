@@ -43,7 +43,7 @@ export const toastMessages = {
     // 链接删除
     linkDeleted: () => toast.success("链接已删除"),
 
-    linkDeleteError: (error: string) => toast.error("Failed to delete", {
+    linkDeleteError: (error: string) => toast.error("删除失败", {
         description: error
     }),
 

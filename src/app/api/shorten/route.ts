@@ -15,23 +15,23 @@ export async function POST(request: Request) {
     const siteConfig = await getSiteConfig()
     const authResult = await checkPublicAccess(supabase, siteConfig.allowPublicShorten)
     if (authResult.error) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+        return NextResponse.json({ error: '未登录' }, { status: 401 })
     }
     const user = authResult.user
 
-    if (!url) return NextResponse.json({ error: 'URL is required' }, { status: 400 })
+    if (!url) return NextResponse.json({ error: 'URL 不能为空' }, { status: 400 })
 
     // --- URL 格式验证 ---
     try {
         const urlObject = new URL(url)
         if (!['http:', 'https:'].includes(urlObject.protocol)) {
             return NextResponse.json({
-                error: 'Invalid URL protocol. Only HTTP and HTTPS are allowed.'
+                error: 'URL 协议无效，仅支持 HTTP 和 HTTPS'
             }, { status: 400 })
         }
     } catch {
         return NextResponse.json({
-            error: 'Invalid URL format. Please enter a valid URL starting with http:// or https://'
+            error: 'URL 格式无效，请输入以 http:// 或 https:// 开头的有效地址'
         }, { status: 400 })
     }
 
@@ -95,7 +95,7 @@ export async function POST(request: Request) {
     if (error) {
         // 如果由于 slug 重复导致唯一性约束错误
         if (error.code === '23505') {
-            return NextResponse.json({ error: 'Custom alias already exists' }, { status: 409 })
+            return NextResponse.json({ error: '该自定义后缀已被使用' }, { status: 409 })
         }
         return NextResponse.json({ error: error.message }, { status: 500 })
     }

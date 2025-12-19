@@ -54,7 +54,7 @@ export async function adminDeleteLink(id: number) {
         .single()
 
     if (profile?.role !== 'admin') {
-        return { error: "Unauthorized: Admin access required" }
+        return { error: "无权限：需要管理员身份" }
     }
 
     // 执行删除 (不检查 user_id，管理员可以删除任何链接)
@@ -89,7 +89,7 @@ export async function getSettings(): Promise<{ data?: AllSettings, error?: strin
         .single()
 
     if (profile?.role !== 'admin') {
-        return { error: "Unauthorized: Admin access required" }
+        return { error: "无权限：需要管理员身份" }
     }
 
     // 读取所有设置
@@ -139,7 +139,7 @@ export async function saveSettings(settings: AllSettings): Promise<{ success?: b
         .single()
 
     if (profile?.role !== 'admin') {
-        return { error: "Unauthorized: Admin access required" }
+        return { error: "无权限：需要管理员身份" }
     }
 
     // 逐个更新设置
@@ -234,7 +234,7 @@ export async function cleanExpiredLinks() {
         .single()
 
     if (profile?.role !== 'admin') {
-        return { error: "Unauthorized: Admin access required" }
+        return { error: "无权限：需要管理员身份" }
     }
 
     // 执行清理

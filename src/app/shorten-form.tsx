@@ -228,23 +228,50 @@ export function ShortenForm({ user }: { user: User | null }) {
                 </Button>
             </form>
 
-            {/* --- 结果显示 (保持不变) --- */}
+            {/* --- 结果显示 --- */}
             <AnimatePresence>
                 {shortUrlSlug && (
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.8, y: 10 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.9 }}
-                        transition={{ type: "spring", stiffness: 200, damping: 20 }}
-                        className="mt-6 p-4 bg-green-50 border border-green-200 text-green-800 rounded-md flex items-center justify-between"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                        className="mt-6"
                     >
-                        <div className="flex flex-col">
-                            <span className="text-xs text-green-600 uppercase font-bold">Success!</span>
-                            <span className="font-medium text-sm">
-                                {typeof window !== 'undefined' ? window.location.host : ''}/{shortUrlSlug}
-                            </span>
+                        <div className="rounded-lg border bg-card p-4 shadow-sm">
+                            <div className="flex items-center justify-between gap-4">
+                                <div className="flex flex-col gap-1">
+                                    <div className="flex items-center gap-2">
+                                        <motion.svg
+                                            initial={{ scale: 0, opacity: 0 }}
+                                            animate={{ scale: 1, opacity: 1 }}
+                                            transition={{ delay: 0.1, type: "spring", stiffness: 400 }}
+                                            className="h-4 w-4 text-primary"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                            strokeWidth={2.5}
+                                        >
+                                            <motion.path
+                                                initial={{ pathLength: 0 }}
+                                                animate={{ pathLength: 1 }}
+                                                transition={{ delay: 0.2, duration: 0.3 }}
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                d="M5 13l4 4L19 7"
+                                            />
+                                        </motion.svg>
+                                        <span className="text-xs font-medium text-muted-foreground">
+                                            短链接已生成
+                                        </span>
+                                    </div>
+                                    <span className="font-medium text-foreground">
+                                        {typeof window !== 'undefined' ? window.location.host : ''}/{shortUrlSlug}
+                                    </span>
+                                </div>
+                                <CopyButton slug={shortUrlSlug} />
+                            </div>
                         </div>
-                        <CopyButton slug={shortUrlSlug} />
                     </motion.div>
                 )}
             </AnimatePresence>
