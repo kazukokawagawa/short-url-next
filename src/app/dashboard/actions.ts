@@ -109,7 +109,8 @@ export async function createLink(formData: FormData) {
             slug: slug,
             user_id: user?.id ?? null,
             user_email: user?.email ?? null,
-            is_no_index: isNoIndex
+            is_no_index: isNoIndex,
+            expires_at: formData.get('expiresAt') as string || null
         })
 
     if (error) {

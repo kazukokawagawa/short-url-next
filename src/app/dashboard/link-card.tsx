@@ -4,7 +4,7 @@ import { formatDistanceToNow } from 'date-fns'
 import { zhCN } from 'date-fns/locale'
 import { CopyButton } from "@/components/copy-button"
 import { motion } from "framer-motion"
-import { Link2, MoreVertical, ExternalLink, Clock, MousePointerClick, Mail, Trash2 } from "lucide-react"
+import { Link2, MoreVertical, ExternalLink, Clock, MousePointerClick, Mail, Trash2, Timer } from "lucide-react"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -38,6 +38,7 @@ interface LinkCardProps {
         created_at: string
         clicks: number
         user_email?: string
+        expires_at?: string | null
     }
     isAdmin?: boolean
     onDeleteSuccess?: () => void
@@ -182,6 +183,26 @@ export function LinkCard({ link, isAdmin = false, onDeleteSuccess, index = 0 }: 
                                     <div className="flex flex-col">
                                         <span className="text-xs text-muted-foreground">点击次数</span>
                                         <span className="text-sm font-medium">{link.clicks} 次</span>
+                                    </div>
+                                </DropdownMenuItem>
+
+                                {/* 有效期 (始终显示) */}
+                                <DropdownMenuItem disabled className="flex items-center gap-2 opacity-100">
+                                    <Timer className="h-4 w-4 shrink-0" />
+                                    <div className="flex flex-col">
+                                        <span className="text-xs text-muted-foreground">有效期</span>
+                                        <span className="text-sm">
+                                            {link.expires_at ? (
+                                                <>
+                                                    还剩 {formatDistanceToNow(new Date(link.expires_at), {
+                                                        addSuffix: false, // Don't use "in" or "ago"
+                                                        locale: zhCN
+                                                    })}
+                                                </>
+                                            ) : (
+                                                "永久"
+                                            )}
+                                        </span>
                                     </div>
                                 </DropdownMenuItem>
 

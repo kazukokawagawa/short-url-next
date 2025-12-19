@@ -89,6 +89,10 @@ ADD COLUMN user_email text;
 -- 可选：为方便查询，给 user_email 添加索引
 CREATE INDEX idx_links_user_email ON links(user_email);
 
+-- 新增：有效期支持
+ALTER TABLE links ADD COLUMN expires_at timestamp with time zone;
+CREATE INDEX idx_links_expires_at ON links(expires_at);
+
 -- 开启行级安全策略 (RLS)
 alter table public.links enable row level security;
 
@@ -186,7 +190,7 @@ with check ( is_admin() );
 -- 初始化默认设置
 insert into public.settings (key, value, description) values
   ('site', '{"name": "LinkFlow", "subtitle": "下一代短链接生成器", "description": "让链接更短，让分享更简单", "keywords": "短链接,URL Shortener,Link Management,Next.js", "authorName": "池鱼", "authorUrl": "https://chiyu.it", "allowPublicShorten": true}', '站点配置'),
-  ('links', '{"slugLength": 6, "enableClickStats": true}', '链接设置'),
+  ('links', '{"slugLength": 6, "enableClickStats": true, "defaultExpiration": 0}', '链接设置'),
   ('appearance', '{"primaryColor": "#1a1a1f", "themeMode": "system"}', '外观设置'),
   ('data', '{"autoCleanExpired": false, "expiredDays": 90}', '数据管理'),
   ('maintenance', '{"enabled": false, "message": ""}', '维护模式'),

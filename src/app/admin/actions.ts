@@ -18,6 +18,7 @@ export interface SiteSettings {
 export interface LinksSettings {
     slugLength: number
     enableClickStats: boolean
+    defaultExpiration?: number // 默认过期时间（分钟），0或undefined表示永不过期
 }
 
 export interface AppearanceSettings {
@@ -135,7 +136,7 @@ export async function getSettings(): Promise<{ data?: AllSettings, error?: strin
                 authorUrl: "https://chiyu.it",
                 allowPublicShorten: true
             },
-            links: settingsMap.links || { slugLength: 6, enableClickStats: true },
+            links: settingsMap.links || { slugLength: 6, enableClickStats: true, defaultExpiration: 0 },
             appearance: settingsMap.appearance || { primaryColor: "#1a1a1f", themeMode: "system" },
             data: settingsMap.data || { autoCleanExpired: false, expiredDays: 90 },
             maintenance: settingsMap.maintenance || { enabled: false, message: "" },

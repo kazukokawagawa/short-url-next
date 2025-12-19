@@ -3,7 +3,7 @@ import { createClient } from '@/utils/supabase/server'
 import { nanoid } from 'nanoid'
 
 export async function POST(request: Request) {
-    const { url, slug } = await request.json()
+    const { url, slug, expiresAt } = await request.json()
     const supabase = await createClient()
 
     // 1. 检查登录状态
@@ -80,14 +80,28 @@ export async function POST(request: Request) {
     console.log('typeof value:', typeof linksSettings?.value)
     console.log('slugLength in value:', linksSettings?.value?.slugLength)
 
+    let defaultExpiration = 0
     if (linksSettings?.value?.slugLength) {
         slugLength = Number(linksSettings.value.slugLength) || 6
+        defaultExpiration = Number(linksSettings.value.defaultExpiration) || 0
     }
 
     console.log('Final slugLength:', slugLength)
+    console.log('Default Expiration:', defaultExpiration)
     console.log('-------------------------')
 
     const finalSlug = slug || nanoid(slugLength)
+
+    // 计算过期时间
+    let finalExpiresAt = null
+
+    if (expiresAt) {
+        finalExpiresAt = expiresAt
+    } else if (defaultExpiration > 0) {
+        const date = new Date()
+        date.setMinutes(date.getMinutes() + defaultExpiration)
+        finalExpiresAt = date.toISOString()
+    }
 
     // 2. 插入数据
     const { data, error } = await supabase
@@ -96,7 +110,8 @@ export async function POST(request: Request) {
             original_url: url,
             slug: finalSlug,
             user_id: user?.id ?? null,
-            user_email: user?.email ?? null
+            user_email: user?.email ?? null,
+            expires_at: finalExpiresAt
         }])
         .select()
         .single()

@@ -37,6 +37,7 @@ export default function AdminSettingsPage() {
 
     // 链接设置
     const [slugLength, setSlugLength] = useState<number | "">(6)
+    const [defaultExpiration, setDefaultExpiration] = useState<string>("0")
     const [enableClickStats, setEnableClickStats] = useState(true)
 
     // 外观设置
@@ -93,6 +94,7 @@ export default function AdminSettingsPage() {
                 setAllowPublicShorten(settings.site.allowPublicShorten)
                 // 链接设置
                 setSlugLength(settings.links.slugLength)
+                setDefaultExpiration(String(settings.links.defaultExpiration || 0))
                 setEnableClickStats(settings.links.enableClickStats)
                 // 外观设置
                 setPrimaryColor(settings.appearance.primaryColor)
@@ -157,7 +159,8 @@ export default function AdminSettingsPage() {
             },
             links: {
                 slugLength: safeSlugLength,
-                enableClickStats: enableClickStats
+                enableClickStats: enableClickStats,
+                defaultExpiration: Number(defaultExpiration)
             },
             appearance: {
                 primaryColor: primaryColor,
@@ -361,6 +364,22 @@ export default function AdminSettingsPage() {
                                     />
                                     <span className="text-sm text-muted-foreground">字符 (1-30)</span>
                                 </div>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="defaultExpiration">默认有效期</Label>
+                                <Select value={defaultExpiration} onValueChange={setDefaultExpiration}>
+                                    <SelectTrigger className="w-[180px]">
+                                        <SelectValue placeholder="选择默认有效期" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="0">永不过期</SelectItem>
+                                        <SelectItem value="60">1 小时</SelectItem>
+                                        <SelectItem value="1440">24 小时</SelectItem>
+                                        <SelectItem value="10080">7 天</SelectItem>
+                                        <SelectItem value="43200">30 天</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <p className="text-sm text-muted-foreground">创建新链接时预设的过期时间</p>
                             </div>
                             <div className="flex items-center justify-between rounded-lg border p-4">
                                 <div className="space-y-0.5">

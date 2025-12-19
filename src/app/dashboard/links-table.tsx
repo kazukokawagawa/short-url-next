@@ -17,6 +17,7 @@ interface Link {
     slug: string
     original_url: string
     created_at: string
+    expires_at?: string | null // Add expiration field
     clicks: number
     user_email?: string
 }

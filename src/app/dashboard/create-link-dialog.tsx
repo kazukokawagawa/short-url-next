@@ -28,6 +28,7 @@ export function CreateLinkDialog({ onSuccess }: { onSuccess?: () => void }) {
     // 状态管理
     const [url, setUrl] = useState('')
     const [slug, setSlug] = useState('')
+    const [expiresAt, setExpiresAt] = useState<string | undefined>(undefined) // undefined means use default/permanent logic or not set yet
     const [showCustomOption, setShowCustomOption] = useState(false)
     const [placeholderSlug, setPlaceholderSlug] = useState('')
 
@@ -37,9 +38,12 @@ export function CreateLinkDialog({ onSuccess }: { onSuccess?: () => void }) {
     async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault()
 
-        // 手动构造 FormData 以确保状态同步（虽然 form 里有 name 属性，但 React 状态控制更稳）
         const formData = new FormData(e.currentTarget)
-        // 注意：Checkbox/Switch 如果没勾选可能不会传值，这里 LinkFormFields 里已经加了 hidden input 处理
+
+        // 如果有 expiresAt，添加到 formData
+        if (expiresAt) {
+            formData.set('expiresAt', expiresAt)
+        }
 
         // 验证 URL 和 Slug
         const urlToCheck = formData.get('url') as string
@@ -111,6 +115,7 @@ export function CreateLinkDialog({ onSuccess }: { onSuccess?: () => void }) {
             setShowCustomOption(false)
             setSlug('')
             setUrl('')
+            setExpiresAt(undefined)
         }
     }
 
@@ -138,6 +143,8 @@ export function CreateLinkDialog({ onSuccess }: { onSuccess?: () => void }) {
                         setUrl={setUrl}
                         slug={slug}
                         setSlug={setSlug}
+                        expiresAt={expiresAt}
+                        setExpiresAt={setExpiresAt}
                         showCustomOption={showCustomOption}
                         setShowCustomOption={setShowCustomOption}
                         placeholderSlug={placeholderSlug}

@@ -18,13 +18,15 @@ export async function getLinksSettings() {
         // 返回默认值
         return {
             slugLength: 6,
-            enableClickStats: true
+            enableClickStats: true,
+            defaultExpiration: 0
         }
     }
 
     return {
         slugLength: data.value?.slugLength ?? 6,
-        enableClickStats: data.value?.enableClickStats ?? true
+        enableClickStats: data.value?.enableClickStats ?? true,
+        defaultExpiration: data.value?.defaultExpiration ?? 0
     }
 }
 

@@ -47,6 +47,12 @@ export default function Dashboard() {
 
             setIsAdmin(profile?.role === 'admin')
 
+            // 0. 清理已过期的链接 (满足用户"删除!!"的要求)
+            await supabase
+                .from('links')
+                .delete()
+                .lt('expires_at', new Date().toISOString())
+
             // 只获取当前用户的链接
             const { data: linksData } = await supabase
                 .from('links')
@@ -68,6 +74,12 @@ export default function Dashboard() {
         // 获取当前用户
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) return
+
+        // 0. 清理已过期的链接
+        await supabase
+            .from('links')
+            .delete()
+            .lt('expires_at', new Date().toISOString())
 
         // 只获取当前用户的链接
         const { data: linksData } = await supabase
