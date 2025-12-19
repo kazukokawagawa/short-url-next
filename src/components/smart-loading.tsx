@@ -33,9 +33,13 @@ export function SmartLoading() {
         }, 10000)
 
         const t5 = setTimeout(() => {
+            setMessage("即将完成...")
+        }, 14000)
+
+        const t6 = setTimeout(() => {
             setMessage("x_x")
             setShowRefresh(true)
-        }, 15000)
+        }, 18000)
 
         return () => {
             clearTimeout(t1)
@@ -43,6 +47,7 @@ export function SmartLoading() {
             clearTimeout(t3)
             clearTimeout(t4)
             clearTimeout(t5)
+            clearTimeout(t6)
         }
     }, [])
 

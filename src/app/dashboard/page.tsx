@@ -89,7 +89,7 @@ export default function Dashboard() {
     return (
         <div className="min-h-screen">
             {/* 主内容区域 */}
-            <div className="container mx-auto max-w-6xl px-4 py-8">
+            <div className="container mx-auto max-w-6xl px-4 pt-16 pb-8 md:pt-24 lg:pt-32">
                 {/* 头部导航栏重构：清晰分层 */}
                 <div className="mb-8 flex flex-col items-start justify-between gap-4 border-b border-border/40 pb-6 md:flex-row md:items-center">
                     {/* 左侧：标题和副标题 */}

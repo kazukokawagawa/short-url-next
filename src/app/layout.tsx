@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -20,6 +20,14 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// PWA Viewport 配置
+export const viewport: Viewport = {
+  themeColor: "#000000",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+};
+
 export async function generateMetadata(): Promise<Metadata> {
   const siteConfig = await getCachedSiteConfig();
 
@@ -31,8 +39,11 @@ export async function generateMetadata(): Promise<Metadata> {
     description: siteConfig.description,
     keywords: siteConfig.keywords.split(/[,，]/).map(k => k.trim()), // Support both English and Chinese commas
     authors: [{ name: siteConfig.authorName, url: siteConfig.authorUrl }],
+    icons: {
+      apple: "/icons/icon-192x192.png",
+    },
     openGraph: {
-      title: `${siteConfig.name} - 下一代短链接生成器`,
+      title: `${siteConfig.name} - ${siteConfig.subtitle}`,
       description: siteConfig.description,
       type: "website",
       siteName: siteConfig.name,
