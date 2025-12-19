@@ -8,7 +8,7 @@ import { getSafeBrowsingConfig, checkUrlSafety } from '@/lib/safe-browsing'
 export interface UrlValidationResult {
     valid: boolean
     error?: string
-    errorCode?: 'URL_MALICIOUS' | 'URL_NOT_ACCESSIBLE' | 'URL_TIMEOUT' | 'URL_VERIFICATION_FAILED'
+    errorCode?: 'URL_MALICIOUS' | 'URL_NOT_ACCESSIBLE' | 'URL_TIMEOUT' | 'URL_VERIFICATION_FAILED' | 'URL_SUFFIX_BLOCKED' | 'URL_DOMAIN_BLOCKED'
     threats?: string[]
     statusCode?: number
 }
@@ -63,19 +63,81 @@ export async function validateUrl(
     } = {}
 ): Promise<UrlValidationResult> {
     const { checkAccessibility = true, logPrefix = '[URL Validation]' } = options
+    const { getSecurityConfig } = await import('@/lib/site-config')
+
+    // 1. 获取安全配置
+    const securityConfig = await getSecurityConfig()
+
+    // 2. 检查 "跳过所有检查"
+    if (securityConfig.skipAllChecks) {
+        console.log(`${logPrefix} ⚠️ 安全设置已开启 "跳过所有检查"，验证直接通过`)
+        return { valid: true }
+    }
+
+    // 3. 检查后缀黑名单
+    if (securityConfig.blacklistSuffix) {
+        const suffixes = securityConfig.blacklistSuffix.split(/[,，]/).map(s => s.trim()).filter(Boolean)
+        if (suffixes.length > 0) {
+            try {
+                const urlObj = new URL(url)
+                const path = urlObj.pathname.toLowerCase()
+                // 检查是否以任意黑名单后缀结尾
+                const matchedSuffix = suffixes.find(suffix => path.endsWith(suffix.toLowerCase()))
+
+                if (matchedSuffix) {
+                    console.log(`${logPrefix} URL 包含禁止的后缀: ${matchedSuffix}`)
+                    return {
+                        valid: false,
+                        error: 'URL_SUFFIX_BLOCKED',
+                        errorCode: 'URL_SUFFIX_BLOCKED', // 使用专用错误码
+                        threats: [`Blocked Suffix: ${matchedSuffix}`]
+                    }
+                }
+            } catch (e) {
+                // URL 解析失败的情况，可能在前面已经被拦截，或者这里忽略
+            }
+        }
+    }
+
+    // 4. 检查域名黑名单
+    if (securityConfig.blacklistDomain) {
+        const domains = securityConfig.blacklistDomain.split(/[,，]/).map(d => d.trim()).filter(Boolean)
+        if (domains.length > 0) {
+            try {
+                const urlObj = new URL(url)
+                const hostname = urlObj.hostname.toLowerCase()
+                // 检查域名是否包含或者是黑名单域名
+                // 严格匹配：hostname === domain 或 hostname.endsWith('.' + domain)
+                const matchedDomain = domains.find(domain => {
+                    const d = domain.toLowerCase()
+                    return hostname === d || hostname.endsWith('.' + d)
+                })
+
+                if (matchedDomain) {
+                    console.log(`${logPrefix} URL 包含禁止的域名: ${matchedDomain}`)
+                    return {
+                        valid: false,
+                        error: 'URL_DOMAIN_BLOCKED',
+                        errorCode: 'URL_DOMAIN_BLOCKED', // 使用专用错误码
+                        threats: [`Blocked Domain: ${matchedDomain}`]
+                    }
+                }
+            } catch (e) {
+                // Ignore parsing errors
+            }
+        }
+    }
 
     // --- Google Safe Browsing 检测 (优先) ---
     console.log(`${logPrefix} ===== Safe Browsing 检测开始 =====`)
-    const safeBrowsingConfig = await getSafeBrowsingConfig()
+    // 使用新的 securityConfig 中的配置，而不是再次调用 getSafeBrowsingConfig
+    // 注意：getSecurityConfig 返回的 key 是 safeBrowsingApiKey，而 checkUrlSafety 需要 apiKey
 
-    console.log(`${logPrefix} Safe Browsing 配置:`, {
-        enabled: safeBrowsingConfig.enabled,
-        hasApiKey: !!safeBrowsingConfig.apiKey
-    })
-
-    if (safeBrowsingConfig.enabled && safeBrowsingConfig.apiKey) {
+    if (securityConfig.safeBrowsingEnabled && securityConfig.safeBrowsingApiKey) {
         console.log(`${logPrefix} Safe Browsing 已启用，开始检测 URL:`, url)
-        const safetyResult = await checkUrlSafety(url, safeBrowsingConfig.apiKey)
+        // 动态引入 checkUrlSafety 避免循环依赖如果 checkUrlSafety 在 safe-browsing.ts 中
+        const { checkUrlSafety } = await import('@/lib/safe-browsing')
+        const safetyResult = await checkUrlSafety(url, securityConfig.safeBrowsingApiKey)
         console.log(`${logPrefix} Safe Browsing 检测结果:`, safetyResult)
 
         if (!safetyResult.isSafe) {

@@ -163,3 +163,49 @@ export async function getMaintenanceConfig(): Promise<MaintenanceConfig> {
         return defaultMaintenanceConfig
     }
 }
+
+// Security Configuration
+export interface SecurityConfig {
+    turnstileEnabled: boolean
+    turnstileSiteKey: string
+    turnstileSecretKey: string
+    safeBrowsingEnabled: boolean
+    safeBrowsingApiKey: string
+    blacklistSuffix: string
+    blacklistDomain: string
+    skipAllChecks: boolean
+}
+
+const defaultSecurityConfig: SecurityConfig = {
+    turnstileEnabled: false,
+    turnstileSiteKey: "",
+    turnstileSecretKey: "",
+    safeBrowsingEnabled: false,
+    safeBrowsingApiKey: "",
+    blacklistSuffix: "",
+    blacklistDomain: "",
+    skipAllChecks: false
+}
+
+export async function getSecurityConfig(): Promise<SecurityConfig> {
+    try {
+        const supabase = await createClient()
+
+        const { data, error } = await supabase
+            .from('settings')
+            .select('value')
+            .eq('key', 'security')
+            .single()
+
+        if (error || !data) {
+            return defaultSecurityConfig
+        }
+
+        return {
+            ...defaultSecurityConfig,
+            ...data.value
+        }
+    } catch {
+        return defaultSecurityConfig
+    }
+}

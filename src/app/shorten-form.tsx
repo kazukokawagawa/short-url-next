@@ -139,6 +139,12 @@ export function ShortenForm({ user }: { user: User | null }) {
                 } else if (data.error === 'URL_MALICIOUS') {
                     toastMessages.urlMalicious(data.threats)
                     toast.dismiss(toastId)
+                } else if (data.error === 'URL_SUFFIX_BLOCKED') {
+                    toastMessages.urlBlocked()
+                    toast.dismiss(toastId)
+                } else if (data.error === 'URL_DOMAIN_BLOCKED') {
+                    toastMessages.urlBlocked()
+                    toast.dismiss(toastId)
                 } else {
                     toastMessages.linkCreateError(data.error || "生成失败", toastId)
                 }

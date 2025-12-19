@@ -70,6 +70,10 @@ export const toastMessages = {
         })
     },
 
+    urlBlocked: () => toast.error("无法创建链接", {
+        description: "该链接被网站管理员禁止"
+    }),
+
     // 登录相关
     loginRequired: (icon: React.ReactNode, action: { label: React.ReactNode, onClick: () => void }) =>
         toast("需要登录", {
