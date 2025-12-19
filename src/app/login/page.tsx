@@ -49,10 +49,15 @@ export default function LoginPage(props: {
     useEffect(() => {
         setGlobalLoading(false)
         // 加载安全设置
-        getPublicSecuritySettings().then(settings => {
-            setTurnstileEnabled(settings.enabled)
-            setTurnstileSiteKey(settings.siteKey)
-        })
+        getPublicSecuritySettings()
+            .then(settings => {
+                console.log('Security settings loaded:', settings)
+                setTurnstileEnabled(settings.enabled)
+                setTurnstileSiteKey(settings.siteKey)
+            })
+            .catch(err => {
+                console.error('Failed to load security settings:', err)
+            })
     }, [setGlobalLoading])
 
     const initialDescription = "输入你的账户以登录控制台"

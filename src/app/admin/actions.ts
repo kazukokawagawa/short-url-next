@@ -196,6 +196,7 @@ export async function getPublicSecuritySettings(): Promise<{ enabled: boolean, s
 
     // 使用 service role key 读取设置（因为登录页面没有用户）
     if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        console.log('[getPublicSecuritySettings] No SUPABASE_SERVICE_ROLE_KEY')
         return { enabled: false, siteKey: '' }
     }
 
@@ -210,19 +211,27 @@ export async function getPublicSecuritySettings(): Promise<{ enabled: boolean, s
         }
     )
 
-    const { data: securitySetting } = await supabaseAdmin
+    const { data: securitySetting, error } = await supabaseAdmin
         .from('settings')
         .select('value')
         .eq('key', 'security')
         .single()
+
+    if (error) {
+        console.log('[getPublicSecuritySettings] Error:', error.message)
+    }
+
+    console.log('[getPublicSecuritySettings] Security setting from DB:', securitySetting?.value)
 
     if (!securitySetting?.value) {
         return { enabled: false, siteKey: '' }
     }
 
     const security = securitySetting.value as SecuritySettings
-    return {
+    const result = {
         enabled: security.turnstileEnabled,
         siteKey: security.turnstileSiteKey
     }
+    console.log('[getPublicSecuritySettings] Returning:', result)
+    return result
 }
