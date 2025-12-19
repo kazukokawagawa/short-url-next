@@ -9,6 +9,7 @@ import { VerificationToast } from "@/components/verification-toast";
 import React from "react";
 import { getCachedSiteConfig } from "@/lib/site-config";
 import { LoadingProvider } from "@/components/providers/loading-provider";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -88,6 +89,7 @@ export default function RootLayout({
           <React.Suspense fallback={null}>
             <VerificationToast />
           </React.Suspense>
+          <SpeedInsights />
         </ThemeProvider>
       </body>
     </html>
