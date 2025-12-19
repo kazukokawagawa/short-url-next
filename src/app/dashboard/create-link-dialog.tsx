@@ -88,6 +88,15 @@ export function CreateLinkDialog({ onSuccess }: { onSuccess?: () => void }) {
                 } else if (result.error === 'URL_MALICIOUS') {
                     toastMessages.urlMalicious((result as { threats?: string[] }).threats)
                     toast.dismiss(toastId)
+                } else if (result.error === 'URL_SUFFIX_BLOCKED') {
+                    toastMessages.urlSuffixBlocked()
+                    toast.dismiss(toastId)
+                } else if (result.error === 'URL_DOMAIN_BLOCKED') {
+                    toastMessages.urlDomainBlocked()
+                    toast.dismiss(toastId)
+                } else if (result.error === 'SLUG_BLOCKED') {
+                    toastMessages.slugBlocked()
+                    toast.dismiss(toastId)
                 } else {
                     toastMessages.linkCreateError(result.error, toastId)
                 }

@@ -67,6 +67,7 @@ export default function AdminSettingsPage() {
     const [safeBrowsingApiKey, setSafeBrowsingApiKey] = useState("")
     const [blacklistSuffix, setBlacklistSuffix] = useState("")
     const [blacklistDomain, setBlacklistDomain] = useState("")
+    const [blacklistSlug, setBlacklistSlug] = useState("")
     const [skipAllChecks, setSkipAllChecks] = useState(false)
 
     // 动作状态
@@ -189,6 +190,7 @@ export default function AdminSettingsPage() {
                 setSafeBrowsingApiKey(settings.security.safeBrowsingApiKey ?? "")
                 setBlacklistSuffix(settings.security.blacklistSuffix ?? "")
                 setBlacklistDomain(settings.security.blacklistDomain ?? "")
+                setBlacklistSlug(settings.security.blacklistSlug ?? "")
                 setSkipAllChecks(settings.security.skipAllChecks ?? false)
             }
 
@@ -270,6 +272,7 @@ export default function AdminSettingsPage() {
                 safeBrowsingApiKey: safeBrowsingApiKey,
                 blacklistSuffix: blacklistSuffix,
                 blacklistDomain: blacklistDomain,
+                blacklistSlug: blacklistSlug,
                 skipAllChecks: skipAllChecks
             },
             announcement: {
@@ -298,7 +301,6 @@ export default function AdminSettingsPage() {
         }, 1000)
     }
 
-    if (isGlobalLoading) return null
     if (loading) {
         return <SmartLoading />
     }
@@ -1038,6 +1040,22 @@ export default function AdminSettingsPage() {
                                     />
                                     <p className="text-xs text-muted-foreground">
                                         禁止缩短包含这些域名的链接，多个域名用英文逗号分隔
+                                    </p>
+                                </div>
+                                <div className="space-y-2">
+                                    <div className="flex items-center gap-2">
+                                        <Ban className="h-4 w-4 text-muted-foreground" />
+                                        <Label htmlFor="blacklistSlug">黑名单后缀</Label>
+                                    </div>
+                                    <Textarea
+                                        id="blacklistSlug"
+                                        value={blacklistSlug}
+                                        onChange={(e) => setBlacklistSlug(e.target.value)}
+                                        placeholder="admin, login, api, dashboard"
+                                        className="font-mono text-sm"
+                                    />
+                                    <p className="text-xs text-muted-foreground">
+                                        禁止用户使用这些自定义后缀，多个后缀用英文逗号分隔
                                     </p>
                                 </div>
                             </div>

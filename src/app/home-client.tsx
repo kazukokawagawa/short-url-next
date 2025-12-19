@@ -70,7 +70,6 @@ export function HomeClient({ siteName, siteDescription, announcementConfig }: Ho
         }
     }, [announcementConfig])
 
-    if (isGlobalLoading) return null
     if (loading) return <SmartLoading />
 
     return (

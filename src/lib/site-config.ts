@@ -173,6 +173,7 @@ export interface SecurityConfig {
     safeBrowsingApiKey: string
     blacklistSuffix: string
     blacklistDomain: string
+    blacklistSlug: string
     skipAllChecks: boolean
 }
 
@@ -184,6 +185,7 @@ const defaultSecurityConfig: SecurityConfig = {
     safeBrowsingApiKey: "",
     blacklistSuffix: "",
     blacklistDomain: "",
+    blacklistSlug: "",
     skipAllChecks: false
 }
 

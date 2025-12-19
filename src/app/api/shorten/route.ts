@@ -51,6 +51,18 @@ export async function POST(request: Request) {
     }
     // -----------------------
 
+    // --- Slug 黑名单验证 ---
+    if (slug) {
+        const { validateSlugBlacklist } = await import('@/lib/url-validation')
+        const slugValidation = await validateSlugBlacklist(slug)
+        if (!slugValidation.valid) {
+            return NextResponse.json({
+                error: slugValidation.errorCode || slugValidation.error
+            }, { status: 400 })
+        }
+    }
+    // -----------------------
+
     // --- Safe Browsing + 可访问性检查 (使用共享函数) ---
     const { validateUrl } = await import('@/lib/url-validation')
     const validationResult = await validateUrl(url, { logPrefix: '[API/shorten]' })

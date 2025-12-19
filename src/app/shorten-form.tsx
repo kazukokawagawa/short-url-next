@@ -140,10 +140,13 @@ export function ShortenForm({ user }: { user: User | null }) {
                     toastMessages.urlMalicious(data.threats)
                     toast.dismiss(toastId)
                 } else if (data.error === 'URL_SUFFIX_BLOCKED') {
-                    toastMessages.urlBlocked()
+                    toastMessages.urlSuffixBlocked()
                     toast.dismiss(toastId)
                 } else if (data.error === 'URL_DOMAIN_BLOCKED') {
-                    toastMessages.urlBlocked()
+                    toastMessages.urlDomainBlocked()
+                    toast.dismiss(toastId)
+                } else if (data.error === 'SLUG_BLOCKED') {
+                    toastMessages.slugBlocked()
                     toast.dismiss(toastId)
                 } else {
                     toastMessages.linkCreateError(data.error || "生成失败", toastId)

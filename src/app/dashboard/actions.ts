@@ -84,22 +84,33 @@ export async function createLink(formData: FormData) {
         return { error: "不能缩短本站的链接" }
     }
 
+    // --- Slug 黑名单验证 ---
+    if (customSlug) {
+        const { validateSlugBlacklist } = await import('@/lib/url-validation')
+        const slugValidation = await validateSlugBlacklist(customSlug)
+        if (!slugValidation.valid) {
+            return { error: slugValidation.errorCode || slugValidation.error }
+        }
+    }
+
     // --- 黑名单/安全检查 (简易版) ---
     const blackList = ['malware.com', 'phishing.site']
     if (blackList.some(domain => url.includes(domain))) {
         return { error: "该链接因安全原因被禁止" }
     }
 
+
     // --- Safe Browsing + 可用性检查 (使用共享函数) ---
     const { validateUrl } = await import('@/lib/url-validation')
     const validationResult = await validateUrl(url, { logPrefix: '[createLink]' })
 
     if (!validationResult.valid) {
-        if (validationResult.errorCode === 'URL_MALICIOUS') {
-            return { error: "URL_MALICIOUS", threats: validationResult.threats }
+        // 返回具体的错误码，让前端可以显示对应的 toast
+        return {
+            error: validationResult.errorCode || validationResult.error || "验证失败",
+            threats: validationResult.threats,
+            statusCode: validationResult.statusCode
         }
-        // 对于其他错误，返回友好的中文提示
-        return { error: "该链接无法访问或已失效，请检查后重试" }
     }
 
     const { error } = await supabase

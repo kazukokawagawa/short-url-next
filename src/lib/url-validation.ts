@@ -8,9 +8,47 @@ import { getSafeBrowsingConfig, checkUrlSafety } from '@/lib/safe-browsing'
 export interface UrlValidationResult {
     valid: boolean
     error?: string
-    errorCode?: 'URL_MALICIOUS' | 'URL_NOT_ACCESSIBLE' | 'URL_TIMEOUT' | 'URL_VERIFICATION_FAILED' | 'URL_SUFFIX_BLOCKED' | 'URL_DOMAIN_BLOCKED'
+    errorCode?: 'URL_MALICIOUS' | 'URL_NOT_ACCESSIBLE' | 'URL_TIMEOUT' | 'URL_VERIFICATION_FAILED' | 'URL_SUFFIX_BLOCKED' | 'URL_DOMAIN_BLOCKED' | 'SLUG_BLOCKED'
     threats?: string[]
     statusCode?: number
+}
+
+/**
+ * Slug 验证结果
+ */
+export interface SlugValidationResult {
+    valid: boolean
+    error?: string
+    errorCode?: 'SLUG_BLOCKED'
+}
+
+/**
+ * 验证 slug 是否在黑名单中
+ */
+export async function validateSlugBlacklist(slug: string): Promise<SlugValidationResult> {
+    if (!slug) return { valid: true }
+
+    const { getSecurityConfig } = await import('@/lib/site-config')
+    const securityConfig = await getSecurityConfig()
+
+    if (securityConfig.blacklistSlug) {
+        const blockedSlugs = securityConfig.blacklistSlug.split(/[,，]/).map(s => s.trim().toLowerCase()).filter(Boolean)
+        if (blockedSlugs.length > 0) {
+            const normalizedSlug = slug.toLowerCase()
+            const matchedSlug = blockedSlugs.find(blocked => normalizedSlug === blocked)
+
+            if (matchedSlug) {
+                console.log(`[Slug Validation] 后缀被禁止: ${matchedSlug}`)
+                return {
+                    valid: false,
+                    error: 'SLUG_BLOCKED',
+                    errorCode: 'SLUG_BLOCKED'
+                }
+            }
+        }
+    }
+
+    return { valid: true }
 }
 
 /**

@@ -194,7 +194,7 @@ insert into public.settings (key, value, description) values
   ('appearance', '{"primaryColor": "#1a1a1f", "themeMode": "system", "toastPosition": "bottom-right"}', '外观设置'),
   ('data', '{"autoCleanExpired": false, "expiredDays": 90}', '数据管理'),
   ('maintenance', '{"enabled": false, "message": ""}', '维护模式'),
-  ('security', '{"turnstileEnabled": false, "turnstileSiteKey": "", "turnstileSecretKey": "", "safeBrowsingEnabled": false, "safeBrowsingApiKey": "", "blacklistSuffix": "", "blacklistDomain": "", "skipAllChecks": false}', '安全设置'),
+  ('security', '{"turnstileEnabled": false, "turnstileSiteKey": "", "turnstileSecretKey": "", "safeBrowsingEnabled": false, "safeBrowsingApiKey": "", "blacklistSuffix": "", "blacklistDomain": "", "blacklistSlug": "", "skipAllChecks": false}', '安全设置'),
   ('announcement', '{"enabled": false, "content": "", "type": "default", "duration": 5000}', '公告设置');
 
   -- 允许 user_id 和 user_email 为空（支持匿名用户）
@@ -293,7 +293,7 @@ alter table public.profiles enable row level security;
 > **注意**：如果数据库中没有 security 设置记录，请手动执行以下 SQL：
 > ```sql
 > INSERT INTO public.settings (key, value, description) VALUES
->   ('security', '{"turnstileEnabled": false, "turnstileSiteKey": "", "turnstileSecretKey": "", "safeBrowsingEnabled": false, "safeBrowsingApiKey": ""}', '安全设置 - 人机验证与链接安全检测');
+>   ('security', '{"turnstileEnabled": false, "turnstileSiteKey": "", "turnstileSecretKey": "", "safeBrowsingEnabled": false, "safeBrowsingApiKey": "", "blacklistSuffix": "", "blacklistDomain": "", "blacklistSlug": "", "skipAllChecks": false}', '安全设置 - 人机验证与链接安全检测');
 > ```
 
 ### 8. 配置 Google Safe Browsing 恶意链接检测（可选）

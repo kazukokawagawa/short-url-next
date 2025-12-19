@@ -70,8 +70,20 @@ export const toastMessages = {
         })
     },
 
+    urlSuffixBlocked: () => toast.error("无法创建链接", {
+        description: "该链接的文件后缀被网站管理员禁止"
+    }),
+
+    urlDomainBlocked: () => toast.error("无法创建链接", {
+        description: "该链接的域名被网站管理员禁止"
+    }),
+
     urlBlocked: () => toast.error("无法创建链接", {
         description: "该链接被网站管理员禁止"
+    }),
+
+    slugBlocked: () => toast.error("无法创建链接", {
+        description: "该自定义后缀被网站管理员禁止"
     }),
 
     // 登录相关

@@ -53,6 +53,7 @@ export interface SecuritySettings {
     safeBrowsingApiKey: string
     blacklistSuffix: string
     blacklistDomain: string
+    blacklistSlug: string
     skipAllChecks: boolean
 }
 
@@ -166,6 +167,7 @@ export async function getSettings(): Promise<{ data?: AllSettings, error?: strin
                 safeBrowsingApiKey: "",
                 blacklistSuffix: "",
                 blacklistDomain: "",
+                blacklistSlug: "",
                 skipAllChecks: false
             },
             announcement: settingsMap.announcement || {
