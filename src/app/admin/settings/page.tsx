@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
-import { ArrowLeft, Globe, Link2, Palette, Database, Wrench, LoaderCircle, Save, Check, Shield, Megaphone, Bell, Ban, AlertTriangle } from "lucide-react"
+import { ArrowLeft, Globe, Link2, Palette, Database, Wrench, LoaderCircle, Save, Check, Shield, Megaphone, Bell, Ban, AlertTriangle, LayoutTemplate, MessageSquareQuote, FileText, Tags, User, UserPlus, Heading, AlignLeft, BarChart3, Ruler, Clock, Paintbrush, Moon, Trash2, CalendarClock, Download, Power, MessageSquareWarning, Bot, Key, Lock, ShieldAlert, KeyRound, FileWarning, GlobeLock, FastForward, Link as IconLink, Trash } from "lucide-react"
 import { Textarea } from "@/components/ui/textarea"
 import { FadeIn } from "@/components/animations/fade-in"
 import { useEffect, useState } from "react"
@@ -338,9 +338,12 @@ export default function AdminSettingsPage() {
                             </div>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <div className="grid gap-4 md:grid-cols-2">
+                            <div className="grid gap-6 md:grid-cols-2">
                                 <div className="space-y-2">
-                                    <Label htmlFor="siteName">站点名称</Label>
+                                    <div className="flex items-center gap-2">
+                                        <LayoutTemplate className="h-4 w-4 text-muted-foreground" />
+                                        <Label htmlFor="siteName">站点名称</Label>
+                                    </div>
                                     <Input
                                         id="siteName"
                                         value={siteName}
@@ -350,7 +353,10 @@ export default function AdminSettingsPage() {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="siteSubtitle">副标题</Label>
+                                    <div className="flex items-center gap-2">
+                                        <MessageSquareQuote className="h-4 w-4 text-muted-foreground" />
+                                        <Label htmlFor="siteSubtitle">副标题</Label>
+                                    </div>
                                     <Input
                                         id="siteSubtitle"
                                         value={siteSubtitle}
@@ -359,31 +365,38 @@ export default function AdminSettingsPage() {
                                         autoComplete="off"
                                     />
                                 </div>
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="siteDescription">站点描述</Label>
-                                <Input
-                                    id="siteDescription"
-                                    value={siteDescription}
-                                    onChange={(e) => setSiteDescription(e.target.value)}
-                                    placeholder="输入站点描述"
-                                    autoComplete="off"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="siteKeywords">站点关键词</Label>
-                                <Input
-                                    id="siteKeywords"
-                                    value={siteKeywords}
-                                    onChange={(e) => setSiteKeywords(e.target.value)}
-                                    placeholder="多个关键词用逗号分隔"
-                                    autoComplete="off"
-                                />
-                                <p className="text-xs text-muted-foreground">多个关键词请用英文逗号分隔</p>
-                            </div>
-                            <div className="grid gap-4 md:grid-cols-2">
+                                <div className="space-y-2 md:col-span-2">
+                                    <div className="flex items-center gap-2">
+                                        <FileText className="h-4 w-4 text-muted-foreground" />
+                                        <Label htmlFor="siteDescription">站点描述</Label>
+                                    </div>
+                                    <Input
+                                        id="siteDescription"
+                                        value={siteDescription}
+                                        onChange={(e) => setSiteDescription(e.target.value)}
+                                        placeholder="输入站点描述"
+                                        autoComplete="off"
+                                    />
+                                </div>
+                                <div className="space-y-2 md:col-span-2">
+                                    <div className="flex items-center gap-2">
+                                        <Tags className="h-4 w-4 text-muted-foreground" />
+                                        <Label htmlFor="siteKeywords">站点关键词</Label>
+                                    </div>
+                                    <Input
+                                        id="siteKeywords"
+                                        value={siteKeywords}
+                                        onChange={(e) => setSiteKeywords(e.target.value)}
+                                        placeholder="多个关键词用逗号分隔"
+                                        autoComplete="off"
+                                    />
+                                    <p className="text-xs text-muted-foreground">多个关键词请用英文逗号分隔</p>
+                                </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="authorName">作者名称</Label>
+                                    <div className="flex items-center gap-2">
+                                        <User className="h-4 w-4 text-muted-foreground" />
+                                        <Label htmlFor="authorName">作者名称</Label>
+                                    </div>
                                     <Input
                                         id="authorName"
                                         value={authorName}
@@ -393,7 +406,10 @@ export default function AdminSettingsPage() {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="authorUrl">作者链接</Label>
+                                    <div className="flex items-center gap-2">
+                                        <IconLink className="h-4 w-4 text-muted-foreground" />
+                                        <Label htmlFor="authorUrl">作者链接</Label>
+                                    </div>
                                     <Input
                                         id="authorUrl"
                                         value={authorUrl}
@@ -405,7 +421,10 @@ export default function AdminSettingsPage() {
                             </div>
                             <div className="flex items-center justify-between rounded-lg border p-4">
                                 <div className="space-y-0.5">
-                                    <Label>开放用户注册</Label>
+                                    <div className="flex items-center gap-2">
+                                        <UserPlus className="h-4 w-4 text-muted-foreground" />
+                                        <Label>开放用户注册</Label>
+                                    </div>
                                     <p className="text-sm text-muted-foreground">
                                         允许新用户注册账号
                                     </p>
@@ -435,7 +454,10 @@ export default function AdminSettingsPage() {
                             {announcementEnabled && (
                                 <div className="space-y-4 rounded-lg border p-4 bg-muted/30">
                                     <div className="space-y-2">
-                                        <Label htmlFor="announcementTitle">公告标题</Label>
+                                        <div className="flex items-center gap-2">
+                                            <Heading className="h-4 w-4 text-muted-foreground" />
+                                            <Label htmlFor="announcementTitle">公告标题</Label>
+                                        </div>
                                         <Input
                                             id="announcementTitle"
                                             value={announcementTitle}
@@ -444,7 +466,10 @@ export default function AdminSettingsPage() {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="announcementContent">公告内容</Label>
+                                        <div className="flex items-center gap-2">
+                                            <AlignLeft className="h-4 w-4 text-muted-foreground" />
+                                            <Label htmlFor="announcementContent">公告内容</Label>
+                                        </div>
                                         <Textarea
                                             id="announcementContent"
                                             value={announcementContent}
@@ -476,7 +501,10 @@ export default function AdminSettingsPage() {
                         <CardContent className="space-y-4">
                             <div className="flex items-center justify-between rounded-lg border p-4">
                                 <div className="space-y-0.5">
-                                    <Label>启用点击统计</Label>
+                                    <div className="flex items-center gap-2">
+                                        <BarChart3 className="h-4 w-4 text-muted-foreground" />
+                                        <Label>启用点击统计</Label>
+                                    </div>
                                     <p className="text-sm text-muted-foreground">
                                         记录每个链接的点击次数和访问数据
                                     </p>
@@ -486,9 +514,12 @@ export default function AdminSettingsPage() {
                                     onCheckedChange={setEnableClickStats}
                                 />
                             </div>
-                            <div className="grid gap-4 md:grid-cols-2">
+                            <div className="grid gap-6 md:grid-cols-2">
                                 <div className="space-y-2">
-                                    <Label htmlFor="slugLength">默认短码长度</Label>
+                                    <div className="flex items-center gap-2">
+                                        <Ruler className="h-4 w-4 text-muted-foreground" />
+                                        <Label htmlFor="slugLength">默认短码长度</Label>
+                                    </div>
                                     <div className="flex items-center gap-4">
                                         <Input
                                             id="slugLength"
@@ -511,7 +542,10 @@ export default function AdminSettingsPage() {
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="defaultExpiration">默认有效期</Label>
+                                    <div className="flex items-center gap-2">
+                                        <Clock className="h-4 w-4 text-muted-foreground" />
+                                        <Label htmlFor="defaultExpiration">默认有效期</Label>
+                                    </div>
                                     <Select value={defaultExpiration} onValueChange={setDefaultExpiration}>
                                         <SelectTrigger className="w-[180px]">
                                             <SelectValue placeholder="选择默认有效期" />
@@ -550,7 +584,10 @@ export default function AdminSettingsPage() {
                             {/* 主题色选择 */}
                             <div className="flex items-center justify-between rounded-lg border p-4">
                                 <div className="space-y-0.5">
-                                    <Label>主题色</Label>
+                                    <div className="flex items-center gap-2">
+                                        <Paintbrush className="h-4 w-4 text-muted-foreground" />
+                                        <Label>主题色</Label>
+                                    </div>
                                     <p className="text-sm text-muted-foreground">
                                         自定义站点的主色调
                                     </p>
@@ -596,7 +633,10 @@ export default function AdminSettingsPage() {
                             {/* 主题模式选择 */}
                             <div className="flex items-center justify-between rounded-lg border p-4">
                                 <div className="space-y-0.5">
-                                    <Label>主题模式</Label>
+                                    <div className="flex items-center gap-2">
+                                        <Moon className="h-4 w-4 text-muted-foreground" />
+                                        <Label>主题模式</Label>
+                                    </div>
                                     <p className="text-sm text-muted-foreground">
                                         {
                                             themeMode === 'light' ? '始终使用浅色主题' :
@@ -640,7 +680,7 @@ export default function AdminSettingsPage() {
                             <div className="flex items-center justify-between rounded-lg border p-4">
                                 <div className="space-y-0.5">
                                     <div className="flex items-center gap-2">
-                                        <Bell className="h-4 w-4" />
+                                        <Bell className="h-4 w-4 text-muted-foreground" />
                                         <Label>通知弹窗位置</Label>
                                     </div>
                                     <p className="text-sm text-muted-foreground">
@@ -680,7 +720,10 @@ export default function AdminSettingsPage() {
                         <CardContent className="space-y-4">
                             <div className="flex items-center justify-between rounded-lg border p-4">
                                 <div className="space-y-0.5">
-                                    <Label>自动清理过期链接</Label>
+                                    <div className="flex items-center gap-2">
+                                        <Trash2 className="h-4 w-4 text-muted-foreground" />
+                                        <Label>自动清理过期链接</Label>
+                                    </div>
                                     <p className="text-sm text-muted-foreground">
                                         定期删除长时间无点击的链接
                                     </p>
@@ -692,8 +735,11 @@ export default function AdminSettingsPage() {
                             </div>
                             <div className="flex flex-wrap items-center justify-end gap-4">
                                 {autoCleanExpired && (
-                                    <div className="flex items-center gap-2">
-                                        <Label htmlFor="expiredDays" className="whitespace-nowrap">过期天数</Label>
+                                    <div className="flex items-center gap-4">
+                                        <div className="flex items-center gap-2">
+                                            <CalendarClock className="h-4 w-4 text-muted-foreground" />
+                                            <Label htmlFor="expiredDays" className="whitespace-nowrap">过期天数</Label>
+                                        </div>
                                         <div className="flex items-center gap-2">
                                             <Input
                                                 id="expiredDays"
@@ -717,7 +763,7 @@ export default function AdminSettingsPage() {
                                                         toast.error("过期天数必须大于 0")
                                                     }
                                                 }}
-                                                className="w-20 h-8"
+                                                className="w-24 h-9"
                                                 autoComplete="off"
                                             />
                                             <span className="text-sm text-muted-foreground whitespace-nowrap">天</span>
@@ -737,7 +783,10 @@ export default function AdminSettingsPage() {
                                                 导出中...
                                             </>
                                         ) : (
-                                            "导出所有链接"
+                                            <>
+                                                <Download className="mr-2 h-4 w-4" />
+                                                导出所有链接
+                                            </>
                                         )}
                                     </Button>
                                     <Button
@@ -753,7 +802,10 @@ export default function AdminSettingsPage() {
                                                 清理中...
                                             </>
                                         ) : (
-                                            "清理已过期链接"
+                                            <>
+                                                <Trash className="mr-2 h-4 w-4" />
+                                                清理已过期链接
+                                            </>
                                         )}
                                     </Button>
                                 </div>
@@ -779,7 +831,10 @@ export default function AdminSettingsPage() {
                         <CardContent className="space-y-4">
                             <div className="flex items-center justify-between rounded-lg border p-4">
                                 <div className="space-y-0.5">
-                                    <Label>启用维护模式</Label>
+                                    <div className="flex items-center gap-2">
+                                        <Power className="h-4 w-4 text-muted-foreground" />
+                                        <Label>启用维护模式</Label>
+                                    </div>
                                     <p className="text-sm text-muted-foreground">
                                         开启后用户将无法访问短链接服务
                                     </p>
@@ -791,7 +846,10 @@ export default function AdminSettingsPage() {
                             </div>
                             {maintenanceMode && (
                                 <div className="space-y-2">
-                                    <Label htmlFor="maintenanceMessage">维护公告</Label>
+                                    <div className="flex items-center gap-2">
+                                        <MessageSquareWarning className="h-4 w-4 text-muted-foreground" />
+                                        <Label htmlFor="maintenanceMessage">维护公告</Label>
+                                    </div>
                                     <Input
                                         id="maintenanceMessage"
                                         value={maintenanceMessage}
@@ -823,7 +881,10 @@ export default function AdminSettingsPage() {
                             {/* Turnstile 人机验证 */}
                             <div className="flex items-center justify-between rounded-lg border p-4">
                                 <div className="space-y-0.5">
-                                    <Label>启用注册人机验证</Label>
+                                    <div className="flex items-center gap-2">
+                                        <Bot className="h-4 w-4 text-muted-foreground" />
+                                        <Label>启用注册人机验证</Label>
+                                    </div>
                                     <p className="text-sm text-muted-foreground">
                                         开启后用户注册时需要完成 Turnstile 验证
                                     </p>
@@ -835,28 +896,36 @@ export default function AdminSettingsPage() {
                             </div>
                             {turnstileEnabled && (
                                 <>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="turnstileSiteKey">Site Key</Label>
-                                        <Input
-                                            id="turnstileSiteKey"
-                                            value={turnstileSiteKey}
-                                            onChange={(e) => setTurnstileSiteKey(e.target.value)}
-                                            placeholder="从 Cloudflare 控制台获取 Site Key"
-                                            autoComplete="off"
-                                        />
-                                        <p className="text-xs text-muted-foreground">前端渲染验证组件时使用</p>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="turnstileSecretKey">Secret Key</Label>
-                                        <Input
-                                            id="turnstileSecretKey"
-                                            type="password"
-                                            value={turnstileSecretKey}
-                                            onChange={(e) => setTurnstileSecretKey(e.target.value)}
-                                            placeholder="从 Cloudflare 控制台获取 Secret Key"
-                                            autoComplete="off"
-                                        />
-                                        <p className="text-xs text-muted-foreground">后端验证 token 时使用，请妥善保管</p>
+                                    <div className="grid gap-6 md:grid-cols-2">
+                                        <div className="space-y-2">
+                                            <div className="flex items-center gap-2">
+                                                <Key className="h-4 w-4 text-muted-foreground" />
+                                                <Label htmlFor="turnstileSiteKey">Site Key</Label>
+                                            </div>
+                                            <Input
+                                                id="turnstileSiteKey"
+                                                value={turnstileSiteKey}
+                                                onChange={(e) => setTurnstileSiteKey(e.target.value)}
+                                                placeholder="从 Cloudflare 控制台获取 Site Key"
+                                                autoComplete="off"
+                                            />
+                                            <p className="text-xs text-muted-foreground">前端渲染验证组件时使用</p>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <div className="flex items-center gap-2">
+                                                <Lock className="h-4 w-4 text-muted-foreground" />
+                                                <Label htmlFor="turnstileSecretKey">Secret Key</Label>
+                                            </div>
+                                            <Input
+                                                id="turnstileSecretKey"
+                                                type="password"
+                                                value={turnstileSecretKey}
+                                                onChange={(e) => setTurnstileSecretKey(e.target.value)}
+                                                placeholder="从 Cloudflare 控制台获取 Secret Key"
+                                                autoComplete="off"
+                                            />
+                                            <p className="text-xs text-muted-foreground">后端验证 token 时使用，请妥善保管</p>
+                                        </div>
                                     </div>
                                 </>
                             )}
@@ -867,7 +936,10 @@ export default function AdminSettingsPage() {
                             {/* Google Safe Browsing */}
                             <div className="flex items-center justify-between rounded-lg border p-4">
                                 <div className="space-y-0.5">
-                                    <Label>启用 Google Safe Browsing</Label>
+                                    <div className="flex items-center gap-2">
+                                        <ShieldAlert className="h-4 w-4 text-muted-foreground" />
+                                        <Label>启用 Google Safe Browsing</Label>
+                                    </div>
                                     <p className="text-sm text-muted-foreground">
                                         创建短链接时检测目标 URL 是否为恶意网址
                                     </p>
@@ -879,7 +951,10 @@ export default function AdminSettingsPage() {
                             </div>
                             {safeBrowsingEnabled && (
                                 <div className="space-y-2">
-                                    <Label htmlFor="safeBrowsingApiKey">API Key</Label>
+                                    <div className="flex items-center gap-2">
+                                        <KeyRound className="h-4 w-4 text-muted-foreground" />
+                                        <Label htmlFor="safeBrowsingApiKey">API Key</Label>
+                                    </div>
                                     <Input
                                         id="safeBrowsingApiKey"
                                         type="password"
@@ -901,7 +976,7 @@ export default function AdminSettingsPage() {
                             <div className="space-y-4">
                                 <div className="space-y-2">
                                     <div className="flex items-center gap-2">
-                                        <Ban className="h-4 w-4" />
+                                        <FileWarning className="h-4 w-4 text-muted-foreground" />
                                         <Label htmlFor="blacklistSuffix">黑名单后缀</Label>
                                     </div>
                                     <Textarea
@@ -917,7 +992,7 @@ export default function AdminSettingsPage() {
                                 </div>
                                 <div className="space-y-2">
                                     <div className="flex items-center gap-2">
-                                        <Ban className="h-4 w-4" />
+                                        <GlobeLock className="h-4 w-4 text-muted-foreground" />
                                         <Label htmlFor="blacklistDomain">黑名单域名</Label>
                                     </div>
                                     <Textarea
