@@ -28,8 +28,67 @@ export async function signup(formData: FormData) {
     const supabase = await createClient()
     const email = formData.get('email') as string
     const password = formData.get('password') as string
+    const turnstileToken = formData.get('turnstileToken') as string | null
 
     const origin = (await headers()).get("origin")
+
+    // 检查是否需要验证 Turnstile
+    if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        const { createClient: createAdminClient } = await import('@supabase/supabase-js')
+        const supabaseAdmin = createAdminClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY!,
+            {
+                auth: {
+                    autoRefreshToken: false,
+                    persistSession: false
+                }
+            }
+        )
+
+        const { data: securitySetting } = await supabaseAdmin
+            .from('settings')
+            .select('value')
+            .eq('key', 'security')
+            .single()
+
+        const security = securitySetting?.value
+
+        // 如果启用了 Turnstile 验证
+        if (security?.turnstileEnabled && security?.turnstileSecretKey) {
+            if (!turnstileToken) {
+                return { error: "请完成人机验证" }
+            }
+
+            // 验证 token
+            const verifyFormData = new URLSearchParams()
+            verifyFormData.append('secret', security.turnstileSecretKey)
+            verifyFormData.append('response', turnstileToken)
+
+            try {
+                const verifyResponse = await fetch(
+                    'https://challenges.cloudflare.com/turnstile/v0/siteverify',
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: verifyFormData.toString(),
+                    }
+                )
+
+                const verifyResult = await verifyResponse.json()
+
+                if (!verifyResult.success) {
+                    console.error('Turnstile verification failed:', verifyResult)
+                    return { error: "人机验证失败，请重试" }
+                }
+            } catch (error) {
+                console.error('Turnstile verification error:', error)
+                return { error: "验证服务暂时不可用，请稍后重试" }
+            }
+        }
+    }
 
     const { data, error } = await supabase.auth.signUp({
         email,

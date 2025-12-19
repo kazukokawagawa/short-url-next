@@ -35,12 +35,19 @@ export interface MaintenanceSettings {
     message: string
 }
 
+export interface SecuritySettings {
+    turnstileEnabled: boolean
+    turnstileSiteKey: string
+    turnstileSecretKey: string
+}
+
 export interface AllSettings {
     site: SiteSettings
     links: LinksSettings
     appearance: AppearanceSettings
     data: DataSettings
     maintenance: MaintenanceSettings
+    security: SecuritySettings
 }
 
 // 管理员删除链接 Action (不限制 user_id)
@@ -129,7 +136,8 @@ export async function getSettings(): Promise<{ data?: AllSettings, error?: strin
             links: settingsMap.links || { slugLength: 6, enableClickStats: true },
             appearance: settingsMap.appearance || { primaryColor: "#7c3aed", themeMode: "system" },
             data: settingsMap.data || { autoCleanExpired: false, expiredDays: 90 },
-            maintenance: settingsMap.maintenance || { enabled: false, message: "" }
+            maintenance: settingsMap.maintenance || { enabled: false, message: "" },
+            security: settingsMap.security || { turnstileEnabled: false, turnstileSiteKey: "", turnstileSecretKey: "" }
         }
     }
 }
@@ -161,7 +169,8 @@ export async function saveSettings(settings: AllSettings): Promise<{ success?: b
         { key: 'links', value: settings.links },
         { key: 'appearance', value: settings.appearance },
         { key: 'data', value: settings.data },
-        { key: 'maintenance', value: settings.maintenance }
+        { key: 'maintenance', value: settings.maintenance },
+        { key: 'security', value: settings.security }
     ]
 
     for (const update of updates) {
@@ -179,4 +188,41 @@ export async function saveSettings(settings: AllSettings): Promise<{ success?: b
 
     revalidatePath('/admin/settings')
     return { success: true }
+}
+
+// 公开获取安全设置（不需要登录，不暴露 Secret Key）
+export async function getPublicSecuritySettings(): Promise<{ enabled: boolean, siteKey: string }> {
+    const { createClient: createAdminClient } = await import('@supabase/supabase-js')
+
+    // 使用 service role key 读取设置（因为登录页面没有用户）
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        return { enabled: false, siteKey: '' }
+    }
+
+    const supabaseAdmin = createAdminClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!,
+        {
+            auth: {
+                autoRefreshToken: false,
+                persistSession: false
+            }
+        }
+    )
+
+    const { data: securitySetting } = await supabaseAdmin
+        .from('settings')
+        .select('value')
+        .eq('key', 'security')
+        .single()
+
+    if (!securitySetting?.value) {
+        return { enabled: false, siteKey: '' }
+    }
+
+    const security = securitySetting.value as SecuritySettings
+    return {
+        enabled: security.turnstileEnabled,
+        siteKey: security.turnstileSiteKey
+    }
 }

@@ -19,7 +19,9 @@ import { TerminalArrowIcon } from "@/components/terminal-arrow-icon"
 import { MailSendIcon } from "@/components/mail-send-icon"
 import { HomeArrowLeftIcon } from "@/components/home-arrow-left-icon"
 import { useLoading } from "@/components/providers/loading-provider"
-import { useEffect } from "react"
+import { TurnstileDialog } from "@/components/turnstile-dialog"
+import { getPublicSecuritySettings } from "@/app/admin/actions"
+import { useEffect, useRef } from "react"
 
 export default function LoginPage(props: {
     searchParams: Promise<{ message: string }>
@@ -37,9 +39,20 @@ export default function LoginPage(props: {
     const [errors, setErrors] = useState<{ email?: string; password?: string }>({})
     const [isBackButtonHovered, setIsBackButtonHovered] = useState(false)
 
-    // 页面加载完成后关闭全局 Loading
+    // Turnstile 验证相关状态
+    const [turnstileEnabled, setTurnstileEnabled] = useState(false)
+    const [turnstileSiteKey, setTurnstileSiteKey] = useState("")
+    const [showTurnstileDialog, setShowTurnstileDialog] = useState(false)
+    const pendingFormDataRef = useRef<FormData | null>(null)
+
+    // 页面加载完成后关闭全局 Loading 并加载安全设置
     useEffect(() => {
         setGlobalLoading(false)
+        // 加载安全设置
+        getPublicSecuritySettings().then(settings => {
+            setTurnstileEnabled(settings.enabled)
+            setTurnstileSiteKey(settings.siteKey)
+        })
     }, [setGlobalLoading])
 
     const initialDescription = "输入你的账户以登录控制台"
@@ -88,7 +101,7 @@ export default function LoginPage(props: {
     }
 
     // --- 2. 处理注册逻辑 ---
-    const handleSignup = async (formData: FormData) => {
+    const handleSignup = async (formData: FormData, turnstileToken?: string) => {
         setErrors({})
         const email = formData.get('email') as string
         const password = formData.get('password') as string
@@ -103,10 +116,21 @@ export default function LoginPage(props: {
             return
         }
 
+        // 如果启用了 Turnstile 验证且没有 token，则显示验证弹窗
+        if (turnstileEnabled && turnstileSiteKey && !turnstileToken) {
+            pendingFormDataRef.current = formData
+            setShowTurnstileDialog(true)
+            return
+        }
+
         setIsSigningUp(true)
         const toastId = toast.loading("正在发送验证邮件...")
 
         try {
+            // 将 token 添加到 formData
+            if (turnstileToken) {
+                formData.set('turnstileToken', turnstileToken)
+            }
             const res = await signup(formData)
 
             if (res?.error) {
@@ -123,6 +147,14 @@ export default function LoginPage(props: {
             toast.error("发生错误", { id: toastId })
         } finally {
             setIsSigningUp(false) // 注册无论成功失败，都恢复按钮状态
+            pendingFormDataRef.current = null
+        }
+    }
+
+    // Turnstile 验证成功后的回调
+    const handleTurnstileSuccess = (token: string) => {
+        if (pendingFormDataRef.current) {
+            handleSignup(pendingFormDataRef.current, token)
         }
     }
 
@@ -313,6 +345,19 @@ export default function LoginPage(props: {
                     </CardContent>
                 </Card>
             </FadeIn>
+
+            {/* Turnstile 验证弹窗 */}
+            {turnstileEnabled && turnstileSiteKey && (
+                <TurnstileDialog
+                    open={showTurnstileDialog}
+                    onOpenChange={setShowTurnstileDialog}
+                    siteKey={turnstileSiteKey}
+                    onSuccess={handleTurnstileSuccess}
+                    onError={() => {
+                        toast.error("验证失败", { description: "请重试" })
+                    }}
+                />
+            )}
         </div>
     )
 }

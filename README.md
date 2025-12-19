@@ -11,6 +11,7 @@
 - 📱 **响应式设计**: 完美适配移动端和桌面端。
 - ⚡ **交互动画**: 丝滑的 Framer Motion 列表与微交互。
 - 🔒 **数据安全**: 完整的 RLS (行级安全策略) 保护用户数据。
+- 🤖 **人机验证**: 可选的 Cloudflare Turnstile 注册验证，防止机器人注册。
 
 ## 🛠️ 技术栈
 
@@ -187,7 +188,8 @@ insert into public.settings (key, value, description) values
   ('links', '{"slugLength": 6, "enableClickStats": true}', '链接设置'),
   ('appearance', '{"primaryColor": "#7c3aed", "themeMode": "system"}', '外观设置'),
   ('data', '{"autoCleanExpired": false, "expiredDays": 90}', '数据管理'),
-  ('maintenance', '{"enabled": false, "message": ""}', '维护模式');
+  ('maintenance', '{"enabled": false, "message": ""}', '维护模式'),
+  ('security', '{"turnstileEnabled": false, "turnstileSiteKey": "", "turnstileSecretKey": ""}', '安全设置 - Cloudflare Turnstile 人机验证');
 
   -- 允许 user_id 和 user_email 为空（支持匿名用户）
 ALTER TABLE links ALTER COLUMN user_id DROP NOT NULL;
@@ -255,6 +257,38 @@ alter table public.profiles enable row level security;
 - 找到 Project API keys 部分
 - 复制 Secret keys或service_role key
 - 添加到项目根目录的 .env.local 文件
+
+### 7. 配置 Cloudflare Turnstile 人机验证（可选）
+
+如果你希望在用户注册时添加人机验证以防止机器人注册，可以配置 Cloudflare Turnstile：
+
+1. **获取 Turnstile 密钥**：
+   - 访问 [Cloudflare Dashboard](https://dash.cloudflare.com)
+   - 进入 Turnstile 页面
+   - 点击 "Add site" 创建新的 widget
+   - 填写站点名称和域名（开发时记得添加 `localhost`）
+   - 选择 Widget 模式（推荐使用 "Managed"）
+   - 获取 **Site Key** 和 **Secret Key**
+
+2. **在管理后台配置**：
+   - 登录你的短链接应用
+   - 进入 管理控制台 → 系统设置
+   - 找到 "安全设置" 卡片
+   - 开启 "启用注册人机验证"
+   - 填入 Site Key 和 Secret Key
+   - 保存设置
+
+3. **测试密钥**（仅用于开发测试）：
+   ```
+   Site Key: 1x00000000000000000000AA (始终通过)
+   Secret Key: 1x0000000000000000000000000000000AA (始终通过)
+   ```
+
+> **注意**：如果数据库中没有 security 设置记录，请手动执行以下 SQL：
+> ```sql
+> INSERT INTO public.settings (key, value, description) VALUES
+>   ('security', '{"turnstileEnabled": false, "turnstileSiteKey": "", "turnstileSecretKey": ""}', '安全设置 - Cloudflare Turnstile 人机验证');
+> ```
 
 ## 📦 部署指南 (Vercel)
 

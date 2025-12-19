@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
-import { ArrowLeft, Globe, Link2, Palette, Database, Wrench, LoaderCircle, Save, Check } from "lucide-react"
+import { ArrowLeft, Globe, Link2, Palette, Database, Wrench, LoaderCircle, Save, Check, Shield } from "lucide-react"
 import { FadeIn } from "@/components/animations/fade-in"
 import { useEffect, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
@@ -47,6 +47,11 @@ export default function AdminSettingsPage() {
     // 维护模式
     const [maintenanceMode, setMaintenanceMode] = useState(false)
     const [maintenanceMessage, setMaintenanceMessage] = useState("")
+
+    // 安全设置
+    const [turnstileEnabled, setTurnstileEnabled] = useState(false)
+    const [turnstileSiteKey, setTurnstileSiteKey] = useState("")
+    const [turnstileSecretKey, setTurnstileSecretKey] = useState("")
 
     useEffect(() => {
         async function loadSettings() {
@@ -93,6 +98,10 @@ export default function AdminSettingsPage() {
                 // 维护模式
                 setMaintenanceMode(settings.maintenance.enabled)
                 setMaintenanceMessage(settings.maintenance.message)
+                // 安全设置
+                setTurnstileEnabled(settings.security.turnstileEnabled)
+                setTurnstileSiteKey(settings.security.turnstileSiteKey)
+                setTurnstileSecretKey(settings.security.turnstileSecretKey)
             }
 
             setLoading(false)
@@ -136,6 +145,11 @@ export default function AdminSettingsPage() {
             maintenance: {
                 enabled: maintenanceMode,
                 message: maintenanceMessage
+            },
+            security: {
+                turnstileEnabled: turnstileEnabled,
+                turnstileSiteKey: turnstileSiteKey,
+                turnstileSecretKey: turnstileSecretKey
             }
         }
 
@@ -514,6 +528,64 @@ export default function AdminSettingsPage() {
                                         autoComplete="off"
                                     />
                                 </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                </FadeIn>
+
+                {/* 安全设置 */}
+                <FadeIn delay={0.45}>
+                    <Card className="transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                        <CardHeader>
+                            <div className="flex items-center gap-3">
+                                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100 dark:bg-green-900/30">
+                                    <Shield className="h-5 w-5 text-green-600 dark:text-green-400" />
+                                </div>
+                                <div>
+                                    <CardTitle>安全设置</CardTitle>
+                                    <CardDescription>Cloudflare Turnstile 人机验证配置</CardDescription>
+                                </div>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="flex items-center justify-between rounded-lg border p-4">
+                                <div className="space-y-0.5">
+                                    <Label>启用注册人机验证</Label>
+                                    <p className="text-sm text-muted-foreground">
+                                        开启后用户注册时需要完成 Turnstile 验证
+                                    </p>
+                                </div>
+                                <Switch
+                                    checked={turnstileEnabled}
+                                    onCheckedChange={setTurnstileEnabled}
+                                />
+                            </div>
+                            {turnstileEnabled && (
+                                <>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="turnstileSiteKey">Site Key</Label>
+                                        <Input
+                                            id="turnstileSiteKey"
+                                            value={turnstileSiteKey}
+                                            onChange={(e) => setTurnstileSiteKey(e.target.value)}
+                                            placeholder="从 Cloudflare 控制台获取 Site Key"
+                                            autoComplete="off"
+                                        />
+                                        <p className="text-xs text-muted-foreground">前端渲染验证组件时使用</p>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="turnstileSecretKey">Secret Key</Label>
+                                        <Input
+                                            id="turnstileSecretKey"
+                                            type="password"
+                                            value={turnstileSecretKey}
+                                            onChange={(e) => setTurnstileSecretKey(e.target.value)}
+                                            placeholder="从 Cloudflare 控制台获取 Secret Key"
+                                            autoComplete="off"
+                                        />
+                                        <p className="text-xs text-muted-foreground">后端验证 token 时使用，请妥善保管</p>
+                                    </div>
+                                </>
                             )}
                         </CardContent>
                     </Card>
