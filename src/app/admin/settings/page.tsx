@@ -1013,7 +1013,7 @@ export default function AdminSettingsPage() {
                                 <div className="space-y-2">
                                     <div className="flex items-center gap-2">
                                         <FileWarning className="h-4 w-4 text-muted-foreground" />
-                                        <Label htmlFor="blacklistSuffix">黑名单后缀</Label>
+                                        <Label htmlFor="blacklistSuffix">后缀黑名单</Label>
                                     </div>
                                     <Textarea
                                         id="blacklistSuffix"
@@ -1029,7 +1029,7 @@ export default function AdminSettingsPage() {
                                 <div className="space-y-2">
                                     <div className="flex items-center gap-2">
                                         <GlobeLock className="h-4 w-4 text-muted-foreground" />
-                                        <Label htmlFor="blacklistDomain">黑名单域名</Label>
+                                        <Label htmlFor="blacklistDomain">域名黑名单</Label>
                                     </div>
                                     <Textarea
                                         id="blacklistDomain"
@@ -1045,7 +1045,7 @@ export default function AdminSettingsPage() {
                                 <div className="space-y-2">
                                     <div className="flex items-center gap-2">
                                         <Ban className="h-4 w-4 text-muted-foreground" />
-                                        <Label htmlFor="blacklistSlug">黑名单后缀</Label>
+                                        <Label htmlFor="blacklistSlug">自定义后缀黑名单</Label>
                                     </div>
                                     <Textarea
                                         id="blacklistSlug"

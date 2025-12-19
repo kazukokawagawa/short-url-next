@@ -10,7 +10,7 @@ import { toast } from "sonner"
 import { LoaderCircle, KeyRound } from 'lucide-react'
 import { motion, AnimatePresence } from "framer-motion"
 import { User } from '@supabase/supabase-js'
-import { LinkFormFields } from '@/components/link-form-fields' // 引入新组件
+import { LinkFormFields, PasswordType } from '@/components/link-form-fields'
 import { LinkArrowIcon } from '@/components/link-arrow-icon'
 import { getSiteSettings } from '@/app/dashboard/settings-actions'
 
@@ -28,6 +28,11 @@ export function ShortenForm({ user }: { user: User | null }) {
     const [shortUrlSlug, setShortUrlSlug] = useState('')
     const [loading, setLoading] = useState(false)
     const [isButtonHovered, setIsButtonHovered] = useState(false)
+
+    // 密码状态
+    const [passwordType, setPasswordType] = useState<PasswordType>('none')
+    const [password, setPassword] = useState('')
+    const [passwordError, setPasswordError] = useState('')
 
     // 获取站点设置
     useEffect(() => {
@@ -102,6 +107,16 @@ export function ShortenForm({ user }: { user: User | null }) {
             return
         }
 
+        // 密码验证
+        if (passwordType === 'six_digit' && password.length !== 6) {
+            setPasswordError('请输入完整的6位数字密码')
+            return
+        }
+        if (passwordType === 'custom' && password.length === 0) {
+            setPasswordError('请输入自定义口令')
+            return
+        }
+
         setLoading(true)
         setShortUrlSlug('')
 
@@ -114,7 +129,12 @@ export function ShortenForm({ user }: { user: User | null }) {
             const res = await fetch('/api/shorten', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ url, slug: finalSlug }),
+                body: JSON.stringify({
+                    url,
+                    slug: finalSlug,
+                    passwordType: passwordType !== 'none' ? passwordType : undefined,
+                    password: passwordType !== 'none' ? password : undefined
+                }),
             })
             const data = await res.json()
 
@@ -124,6 +144,9 @@ export function ShortenForm({ user }: { user: User | null }) {
                 setUrl('')
                 setSlug('')
                 setShowCustomOption(false)
+                setPasswordType('none')
+                setPassword('')
+                setPasswordError('')
                 toastMessages.linkCreateSuccess(toastId)
             } else {
                 // 根据错误类型显示不同的 toast
@@ -174,6 +197,12 @@ export function ShortenForm({ user }: { user: User | null }) {
                     setShowCustomOption={setShowCustomOption}
                     placeholderSlug={placeholderSlug}
                     setPlaceholderSlug={setPlaceholderSlug}
+                    passwordType={passwordType}
+                    setPasswordType={setPasswordType}
+                    password={password}
+                    setPassword={setPassword}
+                    passwordError={passwordError}
+                    setPasswordError={setPasswordError}
                 />
 
                 <Button

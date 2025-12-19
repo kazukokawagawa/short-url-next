@@ -10,10 +10,10 @@ export async function GET(
 ) {
     const { slug } = await params
 
-    // 1. 查询长链接
+    // 1. 查询链接（包含密码字段）
     const { data } = await supabase
         .from('links')
-        .select('id, original_url, expires_at')
+        .select('id, original_url, expires_at, password_type, password_hash')
         .eq('slug', slug)
         .single()
 
@@ -27,6 +27,12 @@ export async function GET(
                 // 返回首页 (或友好的过期页面)
                 return NextResponse.redirect(new URL('/', request.url))
             }
+        }
+
+        // 检查是否需要密码验证
+        if (data.password_type && data.password_type !== 'none' && data.password_hash) {
+            // 需要密码，重定向到验证页面
+            return NextResponse.redirect(new URL(`/${slug}/verify`, request.url))
         }
 
         // 2. 异步更新点击数（不阻塞重定向）

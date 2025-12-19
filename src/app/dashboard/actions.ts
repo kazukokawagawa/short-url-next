@@ -6,6 +6,7 @@ import { redirect } from "next/navigation"
 import { nanoid } from "nanoid"
 import { getFriendlyErrorMessage } from "@/utils/error-mapping"
 import { headers } from "next/headers"
+import bcrypt from 'bcryptjs'
 
 import { retryQuery } from "@/utils/retry"
 
@@ -121,7 +122,16 @@ export async function createLink(formData: FormData) {
             user_id: user?.id ?? null,
             user_email: user?.email ?? null,
             is_no_index: isNoIndex,
-            expires_at: formData.get('expiresAt') as string || null
+            expires_at: formData.get('expiresAt') as string || null,
+            password_type: formData.get('passwordType') as string || 'none',
+            password_hash: await (async () => {
+                const passwordType = formData.get('passwordType') as string
+                const password = formData.get('password') as string
+                if (passwordType && passwordType !== 'none' && password) {
+                    return await bcrypt.hash(password, 10)
+                }
+                return null
+            })()
         })
 
     if (error) {
@@ -175,6 +185,53 @@ export async function deleteLink(id: number) {
         .from('links')
         .delete()
         .eq('id', id)
+        .eq('user_id', user.id)
+
+    if (error) {
+        return { error: getFriendlyErrorMessage(error) }
+    }
+
+    revalidatePath('/dashboard')
+    return { success: true }
+}
+
+// 5. 更新链接密码 Action
+export async function updateLinkPassword(
+    linkId: number,
+    passwordType: 'none' | 'six_digit' | 'custom',
+    password: string
+) {
+    const supabase = await createClient()
+
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+        return { error: "User not authenticated", needsLogin: true }
+    }
+
+    // 验证密码格式
+    if (passwordType === 'six_digit' && password.length !== 6) {
+        return { error: "6位数字密码必须是6位" }
+    }
+    if (passwordType === 'custom' && password.length === 0) {
+        return { error: "自定义口令不能为空" }
+    }
+    if (passwordType === 'custom' && password.length > 128) {
+        return { error: "自定义口令最长128位" }
+    }
+
+    // 计算密码哈希
+    let passwordHash: string | null = null
+    if (passwordType !== 'none' && password) {
+        passwordHash = await bcrypt.hash(password, 10)
+    }
+
+    const { error } = await supabase
+        .from('links')
+        .update({
+            password_type: passwordType,
+            password_hash: passwordHash
+        })
+        .eq('id', linkId)
         .eq('user_id', user.id)
 
     if (error) {

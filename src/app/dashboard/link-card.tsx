@@ -4,7 +4,7 @@ import { formatDistanceToNow } from 'date-fns'
 import { zhCN } from 'date-fns/locale'
 import { CopyButton } from "@/components/copy-button"
 import { motion } from "framer-motion"
-import { Link2, MoreVertical, ExternalLink, Clock, MousePointerClick, Mail, Trash2, Timer } from "lucide-react"
+import { Link2, MoreVertical, ExternalLink, Clock, MousePointerClick, Mail, Trash2, Timer, Lock } from "lucide-react"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
+import { ResetPasswordDialog } from "./reset-password-dialog"
 import { deleteLink } from "./actions"
 import { adminDeleteLink } from "@/app/admin/actions"
 import { toast } from "sonner"
@@ -39,6 +40,7 @@ interface LinkCardProps {
         clicks: number
         user_email?: string
         expires_at?: string | null
+        password_type?: string | null
     }
     isAdmin?: boolean
     onDeleteSuccess?: () => void
@@ -53,6 +55,7 @@ export function LinkCard({ link, isAdmin = false, onDeleteSuccess, index = 0, sh
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
     const [isDeleting, setIsDeleting] = useState(false)
     const [showSessionExpired, setShowSessionExpired] = useState(false)
+    const [resetPasswordDialogOpen, setResetPasswordDialogOpen] = useState(false)
 
     const handleDelete = async () => {
         setIsDeleting(true)
@@ -222,6 +225,28 @@ export function LinkCard({ link, isAdmin = false, onDeleteSuccess, index = 0, sh
                                     </DropdownMenuItem>
                                 )}
 
+                                {/* 密码保护 (仅在有密码时显示) */}
+                                {link.password_type && link.password_type !== 'none' && (
+                                    <DropdownMenuItem disabled className="flex items-center gap-2 opacity-100">
+                                        <Lock className="h-4 w-4 shrink-0" />
+                                        <div className="flex flex-col">
+                                            <span className="text-xs text-muted-foreground">密码保护</span>
+                                            <span className="text-sm">
+                                                {link.password_type === 'six_digit' ? '6位数字密码' : '自定义口令'}
+                                            </span>
+                                        </div>
+                                    </DropdownMenuItem>
+                                )}
+
+                                {/* 重置密码按钮 */}
+                                <DropdownMenuItem
+                                    onClick={() => setResetPasswordDialogOpen(true)}
+                                    className="flex items-center gap-2"
+                                >
+                                    <Lock className="h-4 w-4" />
+                                    <span>{link.password_type && link.password_type !== 'none' ? '修改密码' : '添加密码'}</span>
+                                </DropdownMenuItem>
+
                                 <DropdownMenuSeparator />
 
                                 {/* 删除操作 */}
@@ -276,6 +301,15 @@ export function LinkCard({ link, isAdmin = false, onDeleteSuccess, index = 0, sh
             <SessionExpiredDialog
                 open={showSessionExpired}
                 onOpenChange={setShowSessionExpired}
+            />
+
+            {/* 重置密码对话框 */}
+            <ResetPasswordDialog
+                open={resetPasswordDialogOpen}
+                onOpenChange={setResetPasswordDialogOpen}
+                linkId={link.id}
+                currentPasswordType={link.password_type}
+                onSuccess={onDeleteSuccess}
             />
         </>
     )

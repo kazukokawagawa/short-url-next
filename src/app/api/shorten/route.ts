@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/utils/supabase/server'
 import { nanoid } from 'nanoid'
+import bcrypt from 'bcryptjs'
 
 export async function POST(request: Request) {
-    const { url, slug, expiresAt } = await request.json()
+    const { url, slug, expiresAt, passwordType, password } = await request.json()
     const supabase = await createClient()
 
     // 1. 检查登录状态
@@ -115,6 +116,25 @@ export async function POST(request: Request) {
         finalExpiresAt = date.toISOString()
     }
 
+    // 密码处理
+    let passwordHash: string | null = null
+    const finalPasswordType = passwordType || 'none'
+
+    if (passwordType && passwordType !== 'none' && password) {
+        // 验证6位密码必须是纯数字
+        if (passwordType === 'six_digit') {
+            if (!/^\d{6}$/.test(password)) {
+                return NextResponse.json({ error: '6位密码必须是纯数字' }, { status: 400 })
+            }
+        }
+        // 自定义口令长度限制
+        if (passwordType === 'custom' && password.length > 128) {
+            return NextResponse.json({ error: '自定义口令最长128位' }, { status: 400 })
+        }
+        // 哈希密码
+        passwordHash = await bcrypt.hash(password, 10)
+    }
+
     // 2. 插入数据
     const { data, error } = await supabase
         .from('links')
@@ -123,7 +143,9 @@ export async function POST(request: Request) {
             slug: finalSlug,
             user_id: user?.id ?? null,
             user_email: user?.email ?? null,
-            expires_at: finalExpiresAt
+            expires_at: finalExpiresAt,
+            password_type: finalPasswordType,
+            password_hash: passwordHash
         }])
         .select()
         .single()
