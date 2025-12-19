@@ -25,11 +25,15 @@ interface Link {
 export function LinksTable({
     links,
     isAdmin = false,
-    onDeleteSuccess
+    onDeleteSuccess,
+    showClickStats = true,
+    showCreator = false
 }: {
     links: Link[]
     isAdmin?: boolean
     onDeleteSuccess?: () => void
+    showClickStats?: boolean
+    showCreator?: boolean
 }) {
     // Empty 状态
     if (!links?.length) {
@@ -62,6 +66,8 @@ export function LinksTable({
                     isAdmin={isAdmin}
                     onDeleteSuccess={onDeleteSuccess}
                     index={index}
+                    showClickStats={showClickStats}
+                    showCreator={showCreator}
                 />
             ))}
         </div>

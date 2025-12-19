@@ -3,7 +3,7 @@
 import { createClient } from "@/utils/supabase/client"
 import { LinksTable } from "./links-table"
 import { useRouter } from "next/navigation"
-import { signOut } from "./actions"
+import { signOut, getLinkSettings } from "./actions"
 import { Button } from "@/components/ui/button"
 import { CreateLinkDialog } from "./create-link-dialog"
 import { ActionScale } from "@/components/action-scale"
@@ -23,6 +23,7 @@ export default function Dashboard() {
     const [loading, setLoading] = useState(true)
     const [isAdmin, setIsAdmin] = useState(false)
     const [isHomeHovered, setIsHomeHovered] = useState(false)
+    const [enableClickStats, setEnableClickStats] = useState(true)
     const router = useRouter()
     const { isLoading: isGlobalLoading, setIsLoading: setGlobalLoading } = useLoading()
 
@@ -59,6 +60,12 @@ export default function Dashboard() {
                 .select('*')
                 .eq('user_id', user.id)
                 .order('created_at', { ascending: false })
+
+            // 获取链接设置
+            const settings = await getLinkSettings()
+            if (settings && !settings.error) {
+                setEnableClickStats(settings.enableClickStats)
+            }
 
             setLinks(linksData || [])
             setLoading(false)
@@ -168,7 +175,12 @@ export default function Dashboard() {
                 </div>
 
                 {/* 数据表格 */}
-                <LinksTable links={links} onDeleteSuccess={refreshLinks} />
+                <LinksTable
+                    links={links}
+                    onDeleteSuccess={refreshLinks}
+                    isAdmin={isAdmin}
+                    showClickStats={enableClickStats}
+                />
             </div>
         </div>
     )

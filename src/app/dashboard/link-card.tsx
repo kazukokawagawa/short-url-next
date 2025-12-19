@@ -43,9 +43,11 @@ interface LinkCardProps {
     isAdmin?: boolean
     onDeleteSuccess?: () => void
     index?: number
+    showClickStats?: boolean
+    showCreator?: boolean
 }
 
-export function LinkCard({ link, isAdmin = false, onDeleteSuccess, index = 0 }: LinkCardProps) {
+export function LinkCard({ link, isAdmin = false, onDeleteSuccess, index = 0, showClickStats = true, showCreator = false }: LinkCardProps) {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL?.replace(/^https?:\/\//, '') || 'short.link'
     const isFirstScreen = index < 12
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
@@ -177,14 +179,16 @@ export function LinkCard({ link, isAdmin = false, onDeleteSuccess, index = 0 }: 
                                     </div>
                                 </DropdownMenuItem>
 
-                                {/* 点击次数 */}
-                                <DropdownMenuItem disabled className="flex items-center gap-2 opacity-100">
-                                    <MousePointerClick className="h-4 w-4 shrink-0" />
-                                    <div className="flex flex-col">
-                                        <span className="text-xs text-muted-foreground">点击次数</span>
-                                        <span className="text-sm font-medium">{link.clicks} 次</span>
-                                    </div>
-                                </DropdownMenuItem>
+                                {/* 点击次数 (根据设置显示/隐藏) */}
+                                {showClickStats && (
+                                    <DropdownMenuItem disabled className="flex items-center gap-2 opacity-100">
+                                        <MousePointerClick className="h-4 w-4 shrink-0" />
+                                        <div className="flex flex-col">
+                                            <span className="text-xs text-muted-foreground">点击次数</span>
+                                            <span className="text-sm font-medium">{link.clicks} 次</span>
+                                        </div>
+                                    </DropdownMenuItem>
+                                )}
 
                                 {/* 有效期 (始终显示) */}
                                 <DropdownMenuItem disabled className="flex items-center gap-2 opacity-100">
@@ -206,8 +210,9 @@ export function LinkCard({ link, isAdmin = false, onDeleteSuccess, index = 0 }: 
                                     </div>
                                 </DropdownMenuItem>
 
-                                {/* 管理员：显示创建者邮箱 */}
-                                {isAdmin && link.user_email && (
+
+                                {/* 管理员：显示创建者邮箱 (仅在 showCreator 为 true 时显示) */}
+                                {showCreator && link.user_email && (
                                     <DropdownMenuItem disabled className="flex items-center gap-2 opacity-100">
                                         <Mail className="h-4 w-4 shrink-0" />
                                         <div className="flex flex-col min-w-0">

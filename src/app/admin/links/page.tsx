@@ -77,7 +77,12 @@ export default function AdminLinksPage() {
                 </FadeIn>
             </div>
 
-            <LinksTable links={links} isAdmin={true} onDeleteSuccess={refreshLinks} />
+            <LinksTable
+                links={links}
+                isAdmin={true}
+                onDeleteSuccess={refreshLinks}
+                showCreator={true}
+            />
         </div>
     )
 }

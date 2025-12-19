@@ -122,6 +122,27 @@ export async function createLink(formData: FormData) {
     return { success: true }
 }
 
+// 4. 获取链接设置 Action
+export async function getLinkSettings() {
+    const supabase = await createClient()
+
+    // 获取当前用户 (验证登录)
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+        return { error: "User not authenticated" }
+    }
+
+    const { data: linksSettings } = await supabase
+        .from('settings')
+        .select('value')
+        .eq('key', 'links')
+        .single()
+
+    return {
+        enableClickStats: linksSettings?.value?.enableClickStats ?? true
+    }
+}
+
 // 2. 登出的 Action
 export async function signOut() {
     const supabase = await createClient()
