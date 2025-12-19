@@ -60,11 +60,11 @@ export function CreateLinkDialog({ onSuccess }: { onSuccess?: () => void }) {
 
         // 密码验证
         if (passwordType === 'six_digit' && password.length !== 6) {
-            setPasswordError('请输入完整的6位数字密码')
+            toastMessages.passwordSixDigitRequired()
             return
         }
         if (passwordType === 'custom' && password.length === 0) {
-            setPasswordError('请输入自定义口令')
+            toastMessages.passwordCustomRequired()
             return
         }
 

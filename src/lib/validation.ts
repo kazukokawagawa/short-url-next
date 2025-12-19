@@ -86,6 +86,15 @@ export const toastMessages = {
         description: "该自定义后缀被网站管理员禁止"
     }),
 
+    // 密码验证
+    passwordSixDigitRequired: () => toast.error("密码格式错误", {
+        description: "请输入完整的6位数字密码"
+    }),
+
+    passwordCustomRequired: () => toast.error("密码格式错误", {
+        description: "请输入自定义口令"
+    }),
+
     // 登录相关
     loginRequired: (icon: React.ReactNode, action: { label: React.ReactNode, onClick: () => void }) =>
         toast("需要登录", {
