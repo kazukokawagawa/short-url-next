@@ -238,3 +238,41 @@ export async function getPublicSecuritySettings(): Promise<{ enabled: boolean, s
     console.log('[getPublicSecuritySettings] Returning:', result)
     return result
 }
+
+// 清理已过期链接
+export async function cleanExpiredLinks() {
+    const supabase = await createClient()
+
+    // 1. 验证用户身份
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+        return { error: "User not authenticated", needsLogin: true }
+    }
+
+    // 2. 验证管理员权限
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+
+    if (profile?.role !== 'admin') {
+        return { error: "Unauthorized: Admin access required" }
+    }
+
+    // 3. 执行清理
+    const now = new Date().toISOString()
+    const { error, count } = await supabase
+        .from('links')
+        .delete({ count: 'exact' })
+        .not('expires_at', 'is', null) // expires_at is not null
+        .lt('expires_at', now)         // expires_at < now
+
+    if (error) {
+        console.error('Error cleaning expired links:', error)
+        return { error: getFriendlyErrorMessage(error) }
+    }
+
+    revalidatePath('/admin/settings')
+    return { success: true, count }
+}

@@ -14,7 +14,7 @@ import { FadeIn } from "@/components/animations/fade-in"
 import { useEffect, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { toast } from "sonner"
-import { getSettings, saveSettings, AllSettings } from "@/app/admin/actions"
+import { getSettings, saveSettings, cleanExpiredLinks, AllSettings } from "@/app/admin/actions"
 import { SmartLoading } from "@/components/smart-loading"
 import { useLoading } from "@/components/providers/loading-provider"
 import { useTheme } from "next-themes"
@@ -46,7 +46,7 @@ export default function AdminSettingsPage() {
 
     // 数据管理
     const [autoCleanExpired, setAutoCleanExpired] = useState(false)
-    const [expiredDays, setExpiredDays] = useState(90)
+    const [expiredDays, setExpiredDays] = useState<number | "">(90)
 
     // 维护模式
     const [maintenanceMode, setMaintenanceMode] = useState(false)
@@ -58,6 +58,66 @@ export default function AdminSettingsPage() {
     const [turnstileSecretKey, setTurnstileSecretKey] = useState("")
     const [safeBrowsingEnabled, setSafeBrowsingEnabled] = useState(false)
     const [safeBrowsingApiKey, setSafeBrowsingApiKey] = useState("")
+
+    // 动作状态
+    const [exporting, setExporting] = useState(false)
+    const [cleaning, setCleaning] = useState(false)
+
+    // 导出所有链接
+    const handleExport = async () => {
+        setExporting(true)
+        try {
+            const response = await fetch('/api/admin/export')
+            if (!response.ok) {
+                const error = await response.json()
+                throw new Error(error.error || 'Export failed')
+            }
+
+            // 获取文件名
+            const contentDisposition = response.headers.get('Content-Disposition')
+            const filenameMatch = contentDisposition?.match(/filename="(.+)"/)
+            const filename = filenameMatch ? filenameMatch[1] : `links_export_${new Date().toISOString().split('T')[0]}.csv`
+
+            // 下载文件
+            const blob = await response.blob()
+            const url = window.URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url
+            a.download = filename
+            document.body.appendChild(a)
+            a.click()
+            window.URL.revokeObjectURL(url)
+            document.body.removeChild(a)
+
+            toast.success("导出成功！")
+        } catch (error: any) {
+            console.error('Export error:', error)
+            toast.error(error.message || "导出失败，请稍后重试")
+        } finally {
+            setExporting(false)
+        }
+    }
+
+    // 清理过期链接
+    const handleClean = async () => {
+        if (!confirm("确定要删除所有已过期的链接吗？此操作不可撤销。")) {
+            return
+        }
+
+        setCleaning(true)
+        try {
+            const result = await cleanExpiredLinks()
+            if (result.error) {
+                toast.error(result.error)
+            } else {
+                toast.success(`成功清理了 ${result.count} 个过期链接`)
+            }
+        } catch (error) {
+            toast.error("清理失败，请稍后重试")
+        } finally {
+            setCleaning(false)
+        }
+    }
 
     useEffect(() => {
         async function loadSettings() {
@@ -139,6 +199,12 @@ export default function AdminSettingsPage() {
             return
         }
 
+        // 验证自动清理配置
+        if (autoCleanExpired && (typeof expiredDays !== 'number' || expiredDays <= 0)) {
+            toast.error("配置错误", { description: "过期天数必须大于 0" })
+            return
+        }
+
         // 验证 Safe Browsing 配置
         if (safeBrowsingEnabled && !safeBrowsingApiKey.trim()) {
             toast.error("配置不完整", { description: "启用 Google Safe Browsing 时必须填写 API Key" })
@@ -168,7 +234,7 @@ export default function AdminSettingsPage() {
             },
             data: {
                 autoCleanExpired: autoCleanExpired,
-                expiredDays: expiredDays
+                expiredDays: typeof expiredDays === 'number' && expiredDays > 0 ? expiredDays : 90
             },
             maintenance: {
                 enabled: maintenanceMode,
@@ -538,10 +604,25 @@ export default function AdminSettingsPage() {
                                         <Input
                                             id="expiredDays"
                                             type="number"
-                                            min={30}
-                                            max={365}
+                                            min={1}
                                             value={expiredDays}
-                                            onChange={(e) => setExpiredDays(Number(e.target.value))}
+                                            onChange={(e) => {
+                                                const val = e.target.value
+                                                if (val === "") {
+                                                    setExpiredDays("")
+                                                    return
+                                                }
+                                                const num = parseInt(val)
+                                                if (!isNaN(num) && num > 0) {
+                                                    setExpiredDays(num)
+                                                }
+                                            }}
+                                            onBlur={() => {
+                                                if (expiredDays === "" || expiredDays <= 0) {
+                                                    setExpiredDays(90)
+                                                    toast.error("过期天数必须大于 0")
+                                                }
+                                            }}
                                             className="w-24"
                                             autoComplete="off"
                                         />
@@ -550,11 +631,36 @@ export default function AdminSettingsPage() {
                                 </div>
                             )}
                             <div className="flex gap-2">
-                                <Button variant="outline" size="sm">
-                                    导出所有链接
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={handleExport}
+                                    disabled={exporting}
+                                >
+                                    {exporting ? (
+                                        <>
+                                            <LoaderCircle className="mr-2 h-3 w-3 animate-spin" />
+                                            导出中...
+                                        </>
+                                    ) : (
+                                        "导出所有链接"
+                                    )}
                                 </Button>
-                                <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
-                                    清理已过期链接
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30 border-red-200 dark:border-red-900/30"
+                                    onClick={handleClean}
+                                    disabled={cleaning}
+                                >
+                                    {cleaning ? (
+                                        <>
+                                            <LoaderCircle className="mr-2 h-3 w-3 animate-spin" />
+                                            清理中...
+                                        </>
+                                    ) : (
+                                        "清理已过期链接"
+                                    )}
                                 </Button>
                             </div>
                         </CardContent>
