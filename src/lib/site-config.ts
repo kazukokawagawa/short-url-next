@@ -57,12 +57,14 @@ export const getCachedSiteConfig = getSiteConfig
 export interface AppearanceConfig {
     primaryColor: string
     themeMode: 'light' | 'dark' | 'system'
+    toastPosition: 'top-right' | 'top-center' | 'bottom-right' | 'bottom-center'
 }
 
 // 默认外观设置
 const defaultAppearanceConfig: AppearanceConfig = {
     primaryColor: "#1a1a1f",
-    themeMode: "system"
+    themeMode: "system",
+    toastPosition: "bottom-right"
 }
 
 // 获取外观配置（用于服务端组件）

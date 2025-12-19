@@ -49,7 +49,7 @@ export default function AdminSettingsPage() {
     // 外观设置
     const [primaryColor, setPrimaryColor] = useState("#1a1a1f")
     const [themeMode, setThemeMode] = useState<"light" | "dark" | "system">("system")
-    const [toastMethod, setToastMethod] = useState("bottom-right")
+    const [toastPosition, setToastPosition] = useState("bottom-right")
 
     // 数据管理
     const [autoCleanExpired, setAutoCleanExpired] = useState(false)
@@ -174,7 +174,7 @@ export default function AdminSettingsPage() {
                 // 外观设置
                 setPrimaryColor(settings.appearance.primaryColor)
                 setThemeMode(settings.appearance.themeMode)
-                setToastMethod(settings.appearance.toastMethod || "bottom-right")
+                setToastPosition(settings.appearance.toastPosition || "bottom-right")
                 // 数据管理
                 setAutoCleanExpired(settings.data.autoCleanExpired)
                 setExpiredDays(settings.data.expiredDays)
@@ -252,7 +252,7 @@ export default function AdminSettingsPage() {
             appearance: {
                 primaryColor: primaryColor,
                 themeMode: themeMode,
-                toastMethod: toastMethod as any
+                toastPosition: toastPosition as any
             },
             data: {
                 autoCleanExpired: autoCleanExpired,
@@ -721,7 +721,7 @@ export default function AdminSettingsPage() {
                                         设置全局 Toast 通知的弹出位置
                                     </p>
                                 </div>
-                                <Select value={toastMethod} onValueChange={setToastMethod}>
+                                <Select value={toastPosition} onValueChange={setToastPosition}>
                                     <SelectTrigger className="w-[180px]">
                                         <SelectValue />
                                     </SelectTrigger>

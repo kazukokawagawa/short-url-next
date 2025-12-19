@@ -90,7 +90,7 @@ export default async function RootLayout({
             </main>
           </LoadingProvider>
           <SiteFooter />
-          <Toaster />
+          <Toaster position={appearanceConfig.toastPosition} />
           <React.Suspense fallback={null}>
             <VerificationToast />
           </React.Suspense>

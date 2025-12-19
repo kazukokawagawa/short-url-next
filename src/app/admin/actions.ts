@@ -26,7 +26,7 @@ export interface LinksSettings {
 export interface AppearanceSettings {
     primaryColor: string
     themeMode: 'light' | 'dark' | 'system'
-    toastMethod: 'top-right' | 'top-center' | 'bottom-right' | 'bottom-center'
+    toastPosition: 'top-right' | 'top-center' | 'bottom-right' | 'bottom-center'
 }
 
 export interface DataSettings {
@@ -148,7 +148,7 @@ export async function getSettings(): Promise<{ data?: AllSettings, error?: strin
             appearance: settingsMap.appearance || {
                 primaryColor: "#1a1a1f",
                 themeMode: "system",
-                toastMethod: "bottom-right"
+                toastPosition: "bottom-right"
             },
             data: settingsMap.data || { autoCleanExpired: false, expiredDays: 90 },
             maintenance: settingsMap.maintenance || { enabled: false, message: "" },
