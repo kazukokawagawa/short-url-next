@@ -17,7 +17,7 @@ import { toast } from "sonner"
 import { toastMessages, validateUrl, validateSlug } from '@/lib/validation'
 import { ActionScale } from "@/components/action-scale"
 import { SessionExpiredDialog } from "@/components/session-expired-dialog"
-import { LinkFormFields } from '@/components/link-form-fields' // 引入新组件
+import { LinkFormFields, PasswordType } from '@/components/link-form-fields' // 引入新组件
 import { Plus } from "lucide-react"
 import { SaveCheckIcon } from "@/components/save-check-icon"
 
@@ -31,6 +31,11 @@ export function CreateLinkDialog({ onSuccess }: { onSuccess?: () => void }) {
     const [expiresAt, setExpiresAt] = useState<string | undefined>(undefined) // undefined means use default/permanent logic or not set yet
     const [showCustomOption, setShowCustomOption] = useState(false)
     const [placeholderSlug, setPlaceholderSlug] = useState('')
+
+    // 密码状态
+    const [passwordType, setPasswordType] = useState<PasswordType>('none')
+    const [password, setPassword] = useState('')
+    const [passwordError, setPasswordError] = useState('')
 
     const [showSessionExpired, setShowSessionExpired] = useState(false)
     const [isButtonHovered, setIsButtonHovered] = useState(false)
@@ -50,6 +55,16 @@ export function CreateLinkDialog({ onSuccess }: { onSuccess?: () => void }) {
         const slugToCheck = formData.get('slug') as string
 
         if (!validateUrl(urlToCheck) || !validateSlug(slugToCheck)) {
+            return
+        }
+
+        // 密码验证
+        if (passwordType === 'six_digit' && password.length !== 6) {
+            setPasswordError('请输入完整的6位数字密码')
+            return
+        }
+        if (passwordType === 'custom' && password.length === 0) {
+            setPasswordError('请输入自定义口令')
             return
         }
 
@@ -125,6 +140,10 @@ export function CreateLinkDialog({ onSuccess }: { onSuccess?: () => void }) {
             setSlug('')
             setUrl('')
             setExpiresAt(undefined)
+            // 重置密码状态
+            setPasswordType('none')
+            setPassword('')
+            setPasswordError('')
         }
     }
 
@@ -158,6 +177,12 @@ export function CreateLinkDialog({ onSuccess }: { onSuccess?: () => void }) {
                         setShowCustomOption={setShowCustomOption}
                         placeholderSlug={placeholderSlug}
                         setPlaceholderSlug={setPlaceholderSlug}
+                        passwordType={passwordType}
+                        setPasswordType={setPasswordType}
+                        password={password}
+                        setPassword={setPassword}
+                        passwordError={passwordError}
+                        setPasswordError={setPasswordError}
                     />
 
                     <DialogFooter>
