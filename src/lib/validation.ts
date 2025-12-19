@@ -62,6 +62,14 @@ export const toastMessages = {
         description: "无法验证链接可用性，请稍后再试"
     }),
 
+    urlMalicious: (threats?: string[]) => {
+        const threatText = threats?.length ? threats.join("、") : "潜在安全威胁"
+        return toast.warning("安全风险警告", {
+            description: `Google Safe Browsing 检测到该链接存在安全风险：${threatText}。为保护用户安全，已阻止创建此短链接。`,
+            duration: 8000  // 显示更长时间让用户看清
+        })
+    },
+
     // 登录相关
     loginRequired: (icon: React.ReactNode, action: { label: React.ReactNode, onClick: () => void }) =>
         toast("需要登录", {

@@ -12,6 +12,7 @@
 - ⚡ **交互动画**: 丝滑的 Framer Motion 列表与微交互。
 - 🔒 **数据安全**: 完整的 RLS (行级安全策略) 保护用户数据。
 - 🤖 **人机验证**: 可选的 Cloudflare Turnstile 注册验证，防止机器人注册。
+- 🔍 **恶意链接检测**: 可选的 Google Safe Browsing API 集成，检测铓鱼/恶意软件等威胁。
 
 ## 🛠️ 技术栈
 
@@ -189,7 +190,7 @@ insert into public.settings (key, value, description) values
   ('appearance', '{"primaryColor": "#7c3aed", "themeMode": "system"}', '外观设置'),
   ('data', '{"autoCleanExpired": false, "expiredDays": 90}', '数据管理'),
   ('maintenance', '{"enabled": false, "message": ""}', '维护模式'),
-  ('security', '{"turnstileEnabled": false, "turnstileSiteKey": "", "turnstileSecretKey": ""}', '安全设置 - Cloudflare Turnstile 人机验证');
+  ('security', '{"turnstileEnabled": false, "turnstileSiteKey": "", "turnstileSecretKey": "", "safeBrowsingEnabled": false, "safeBrowsingApiKey": ""}', '安全设置 - 人机验证与链接安全检测');
 
   -- 允许 user_id 和 user_email 为空（支持匿名用户）
 ALTER TABLE links ALTER COLUMN user_id DROP NOT NULL;
@@ -287,8 +288,58 @@ alter table public.profiles enable row level security;
 > **注意**：如果数据库中没有 security 设置记录，请手动执行以下 SQL：
 > ```sql
 > INSERT INTO public.settings (key, value, description) VALUES
->   ('security', '{"turnstileEnabled": false, "turnstileSiteKey": "", "turnstileSecretKey": ""}', '安全设置 - Cloudflare Turnstile 人机验证');
+>   ('security', '{"turnstileEnabled": false, "turnstileSiteKey": "", "turnstileSecretKey": "", "safeBrowsingEnabled": false, "safeBrowsingApiKey": ""}', '安全设置 - 人机验证与链接安全检测');
 > ```
+
+### 8. 配置 Google Safe Browsing 恶意链接检测（可选）
+
+如果你希望在创建短链接时检测目标 URL 是否为恶意网址（钓鱼、恶意软件等），可以配置 Google Safe Browsing API：
+
+#### 获取 API Key
+
+1. 访问 [Google Cloud Console](https://console.cloud.google.com)
+2. 创建新项目或选择现有项目
+3. 进入 **APIs & Services** → **Library**
+4. 搜索并启用 **Safe Browsing API**
+5. 进入 **APIs & Services** → **Credentials**
+6. 点击 **Create Credentials** → **API Key**
+7. 复制生成的 API Key
+
+#### 配置 API Key 限制（重要）
+
+> [!CAUTION]
+> Safe Browsing API 是**服务端调用**，不要使用 HTTP Referrer 限制！否则会导致 403 错误。
+
+在 Credentials 页面点击编辑你的 API Key：
+
+- **Application restrictions（应用限制）**：
+  - 选择 **None**（无限制）或 **IP addresses**（IP 地址限制）
+  - ❌ 不要选择 "HTTP referrers"，服务端请求没有 Referrer header
+  
+- **API restrictions（API 限制）**：
+  - 选择 **Restrict key**，然后只选择 **Safe Browsing API**
+  - 这样可以确保 Key 只能用于 Safe Browsing，提高安全性
+
+#### 在管理后台启用
+
+1. 登录你的短链接应用
+2. 进入 **管理控制台** → **系统设置**
+3. 找到「安全设置」卡片
+4. 开启「启用 Google Safe Browsing」
+5. 填入 API Key
+6. 点击「保存所有设置」
+
+#### 功能说明
+
+| 项目 | 说明 |
+|------|------|
+| **检测时机** | 创建短链接时自动检测目标 URL |
+| **检测内容** | 恶意软件、钓鱼网站、社会工程攻击、不需要的软件 |
+| **检测到威胁** | 拒绝创建短链接并显示警告提示 |
+| **API 失败处理** | fallback 允许创建，不阻塞正常操作 |
+
+> [!NOTE]
+> Google Safe Browsing API 仅供**非商业用途**。如需商业使用，请考虑 [Google Web Risk API](https://cloud.google.com/web-risk)。
 
 ## 📦 部署指南 (Vercel)
 

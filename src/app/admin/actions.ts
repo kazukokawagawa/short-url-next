@@ -39,6 +39,8 @@ export interface SecuritySettings {
     turnstileEnabled: boolean
     turnstileSiteKey: string
     turnstileSecretKey: string
+    safeBrowsingEnabled: boolean
+    safeBrowsingApiKey: string
 }
 
 export interface AllSettings {
@@ -137,7 +139,7 @@ export async function getSettings(): Promise<{ data?: AllSettings, error?: strin
             appearance: settingsMap.appearance || { primaryColor: "#7c3aed", themeMode: "system" },
             data: settingsMap.data || { autoCleanExpired: false, expiredDays: 90 },
             maintenance: settingsMap.maintenance || { enabled: false, message: "" },
-            security: settingsMap.security || { turnstileEnabled: false, turnstileSiteKey: "", turnstileSecretKey: "" }
+            security: settingsMap.security || { turnstileEnabled: false, turnstileSiteKey: "", turnstileSecretKey: "", safeBrowsingEnabled: false, safeBrowsingApiKey: "" }
         }
     }
 }

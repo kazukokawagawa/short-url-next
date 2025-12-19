@@ -14,40 +14,8 @@ function isValidUrl(url: string) {
     try {
         const parsed = new URL(url)
         return parsed.protocol === "http:" || parsed.protocol === "https:"
-    } catch (err) {
+    } catch {
         return false
-    }
-}
-
-// 2. 检查链接是否可用 (Ping 一下)
-async function checkUrlAvailability(url: string) {
-    try {
-        // 设置 5 秒超时，防止卡住
-        const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 5000)
-
-        const res = await fetch(url, {
-            method: 'HEAD', // 只请求头信息，不下载内容，速度快
-            signal: controller.signal,
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (compatible; MyShortener/1.0; +http://your-domain.com)' // 伪装成友好的爬虫
-            }
-        })
-
-        clearTimeout(timeoutId)
-
-        // 只要状态码不是 404 或 5xx，通常都视为可用
-        // 注意：有些网站屏蔽 HEAD 请求会返回 405，这也算可用
-        return res.status !== 404 && res.status < 500
-    } catch (error) {
-        // 假如 HEAD 失败（有些网站完全屏蔽），再尝试一次 GET
-        try {
-            // 这里可以写 GET 重试逻辑，或者直接返回 false
-            // 为了演示简单，如果连不上通常就是 false
-            return false
-        } catch (e) {
-            return false
-        }
     }
 }
 
@@ -116,17 +84,22 @@ export async function createLink(formData: FormData) {
         return { error: "不能缩短本站的链接" }
     }
 
-    // --- 可用性检查 (可选，建议开启) ---
-    // 这会增加几秒钟的等待时间
-    const isAlive = await checkUrlAvailability(url)
-    if (!isAlive) {
-        return { error: "该链接无法访问或已失效，请检查后重试" }
-    }
-
     // --- 黑名单/安全检查 (简易版) ---
     const blackList = ['malware.com', 'phishing.site']
     if (blackList.some(domain => url.includes(domain))) {
         return { error: "该链接因安全原因被禁止" }
+    }
+
+    // --- Safe Browsing + 可用性检查 (使用共享函数) ---
+    const { validateUrl } = await import('@/lib/url-validation')
+    const validationResult = await validateUrl(url, { logPrefix: '[createLink]' })
+
+    if (!validationResult.valid) {
+        if (validationResult.errorCode === 'URL_MALICIOUS') {
+            return { error: "URL_MALICIOUS", threats: validationResult.threats }
+        }
+        // 对于其他错误，返回友好的中文提示
+        return { error: "该链接无法访问或已失效，请检查后重试" }
     }
 
     const { error } = await supabase

@@ -51,43 +51,18 @@ export async function POST(request: Request) {
     }
     // -----------------------
 
-    // --- URL 可访问性检测 ---
-    try {
-        const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 5000) // 5秒超时
+    // --- Safe Browsing + 可访问性检查 (使用共享函数) ---
+    const { validateUrl } = await import('@/lib/url-validation')
+    const validationResult = await validateUrl(url, { logPrefix: '[API/shorten]' })
 
-        const response = await fetch(url, {
-            method: 'HEAD', // 使用 HEAD 请求，只获取响应头，更快
-            signal: controller.signal,
-            redirect: 'follow', // 跟随重定向
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/534.16 (KHTML, like Gecko) Chrome/10.0.648.133 Safari/534.16'
-            }
-        })
-
-        clearTimeout(timeoutId)
-
-        // 检查响应状态
-        if (!response.ok) {
-            return NextResponse.json({
-                error: 'URL_NOT_ACCESSIBLE',
-                statusCode: response.status
-            }, { status: 400 })
-        }
-    } catch (error: any) {
-        // 处理不同类型的错误
-        if (error.name === 'AbortError') {
-            return NextResponse.json({
-                error: 'URL_TIMEOUT'
-            }, { status: 400 })
-        }
-
-        // 其他网络错误
+    if (!validationResult.valid) {
         return NextResponse.json({
-            error: 'URL_VERIFICATION_FAILED'
+            error: validationResult.errorCode || validationResult.error,
+            threats: validationResult.threats,
+            statusCode: validationResult.statusCode
         }, { status: 400 })
     }
-    // -----------------------
+
 
     // 如果用户提供了 slug，就用用户的；否则生成一个新的
     let slugLength = 6

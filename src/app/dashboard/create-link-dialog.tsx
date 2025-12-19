@@ -73,13 +73,16 @@ export function CreateLinkDialog({ onSuccess }: { onSuccess?: () => void }) {
             if (result?.error) {
                 // 根据错误类型显示不同的 toast
                 if (result.error === 'URL_NOT_ACCESSIBLE') {
-                    toastMessages.urlNotAccessible((result as any).statusCode)
+                    toastMessages.urlNotAccessible((result as { statusCode?: number }).statusCode)
                     toast.dismiss(toastId)
                 } else if (result.error === 'URL_TIMEOUT') {
                     toastMessages.urlTimeout()
                     toast.dismiss(toastId)
                 } else if (result.error === 'URL_VERIFICATION_FAILED') {
                     toastMessages.urlVerificationFailed()
+                    toast.dismiss(toastId)
+                } else if (result.error === 'URL_MALICIOUS') {
+                    toastMessages.urlMalicious((result as { threats?: string[] }).threats)
                     toast.dismiss(toastId)
                 } else {
                     toastMessages.linkCreateError(result.error, toastId)

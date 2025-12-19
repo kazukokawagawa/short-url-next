@@ -52,6 +52,8 @@ export default function AdminSettingsPage() {
     const [turnstileEnabled, setTurnstileEnabled] = useState(false)
     const [turnstileSiteKey, setTurnstileSiteKey] = useState("")
     const [turnstileSecretKey, setTurnstileSecretKey] = useState("")
+    const [safeBrowsingEnabled, setSafeBrowsingEnabled] = useState(false)
+    const [safeBrowsingApiKey, setSafeBrowsingApiKey] = useState("")
 
     useEffect(() => {
         async function loadSettings() {
@@ -102,6 +104,8 @@ export default function AdminSettingsPage() {
                 setTurnstileEnabled(settings.security.turnstileEnabled)
                 setTurnstileSiteKey(settings.security.turnstileSiteKey)
                 setTurnstileSecretKey(settings.security.turnstileSecretKey)
+                setSafeBrowsingEnabled(settings.security.safeBrowsingEnabled ?? false)
+                setSafeBrowsingApiKey(settings.security.safeBrowsingApiKey ?? "")
             }
 
             setLoading(false)
@@ -115,6 +119,18 @@ export default function AdminSettingsPage() {
         const safeSlugLength = slugLength === "" ? 0 : slugLength
         if (safeSlugLength < 1 || safeSlugLength > 30) {
             toast.error("参数错误", { description: "短码长度必须在 1-30 位之间" })
+            return
+        }
+
+        // 验证 Turnstile 配置
+        if (turnstileEnabled && (!turnstileSiteKey.trim() || !turnstileSecretKey.trim())) {
+            toast.error("配置不完整", { description: "启用 Turnstile 时必须填写 Site Key 和 Secret Key" })
+            return
+        }
+
+        // 验证 Safe Browsing 配置
+        if (safeBrowsingEnabled && !safeBrowsingApiKey.trim()) {
+            toast.error("配置不完整", { description: "启用 Google Safe Browsing 时必须填写 API Key" })
             return
         }
 
@@ -149,7 +165,9 @@ export default function AdminSettingsPage() {
             security: {
                 turnstileEnabled: turnstileEnabled,
                 turnstileSiteKey: turnstileSiteKey,
-                turnstileSecretKey: turnstileSecretKey
+                turnstileSecretKey: turnstileSecretKey,
+                safeBrowsingEnabled: safeBrowsingEnabled,
+                safeBrowsingApiKey: safeBrowsingApiKey
             }
         }
 
@@ -543,11 +561,12 @@ export default function AdminSettingsPage() {
                                 </div>
                                 <div>
                                     <CardTitle>安全设置</CardTitle>
-                                    <CardDescription>Cloudflare Turnstile 人机验证配置</CardDescription>
+                                    <CardDescription>人机验证与链接安全检测配置</CardDescription>
                                 </div>
                             </div>
                         </CardHeader>
                         <CardContent className="space-y-4">
+                            {/* Turnstile 人机验证 */}
                             <div className="flex items-center justify-between rounded-lg border p-4">
                                 <div className="space-y-0.5">
                                     <Label>启用注册人机验证</Label>
@@ -586,6 +605,39 @@ export default function AdminSettingsPage() {
                                         <p className="text-xs text-muted-foreground">后端验证 token 时使用，请妥善保管</p>
                                     </div>
                                 </>
+                            )}
+
+                            {/* 分隔线 */}
+                            <div className="border-t my-2" />
+
+                            {/* Google Safe Browsing */}
+                            <div className="flex items-center justify-between rounded-lg border p-4">
+                                <div className="space-y-0.5">
+                                    <Label>启用 Google Safe Browsing</Label>
+                                    <p className="text-sm text-muted-foreground">
+                                        创建短链接时检测目标 URL 是否为恶意网址
+                                    </p>
+                                </div>
+                                <Switch
+                                    checked={safeBrowsingEnabled}
+                                    onCheckedChange={setSafeBrowsingEnabled}
+                                />
+                            </div>
+                            {safeBrowsingEnabled && (
+                                <div className="space-y-2">
+                                    <Label htmlFor="safeBrowsingApiKey">API Key</Label>
+                                    <Input
+                                        id="safeBrowsingApiKey"
+                                        type="password"
+                                        value={safeBrowsingApiKey}
+                                        onChange={(e) => setSafeBrowsingApiKey(e.target.value)}
+                                        placeholder="从 Google Cloud Console 获取 API Key"
+                                        autoComplete="off"
+                                    />
+                                    <p className="text-xs text-muted-foreground">
+                                        在 <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Google Cloud Console</a> 创建 API Key 并启用 Safe Browsing API
+                                    </p>
+                                </div>
                             )}
                         </CardContent>
                     </Card>
