@@ -52,12 +52,14 @@ export async function getSiteSettings() {
     if (error || !data) {
         // 返回默认值（与管理后台默认值一致）
         return {
-            allowPublicShorten: true
+            allowPublicShorten: true,
+            openRegistration: true
         }
     }
 
     return {
-        allowPublicShorten: data.value?.allowPublicShorten ?? true
+        allowPublicShorten: data.value?.allowPublicShorten ?? true,
+        openRegistration: data.value?.openRegistration ?? true
     }
 }
 

@@ -54,6 +54,17 @@ export async function signup(formData: FormData) {
 
         const security = securitySetting?.value
 
+        // 1.5 检查是否允许注册
+        const { data: siteSetting } = await supabaseAdmin
+            .from('settings')
+            .select('value')
+            .eq('key', 'site')
+            .single()
+
+        if (siteSetting?.value?.openRegistration === false) {
+            return { error: "暂未开放用户注册" }
+        }
+
         // 如果启用了 Turnstile 验证
         if (security?.turnstileEnabled && security?.turnstileSecretKey) {
             if (!turnstileToken) {

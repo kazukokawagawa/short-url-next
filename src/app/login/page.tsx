@@ -20,7 +20,8 @@ import { MailSendIcon } from "@/components/mail-send-icon"
 import { HomeArrowLeftIcon } from "@/components/home-arrow-left-icon"
 import { useLoading } from "@/components/providers/loading-provider"
 import { TurnstileDialog } from "@/components/turnstile-dialog"
-import { getPublicSecuritySettings } from "@/app/admin/actions"
+import { getPublicSecuritySettings, } from "@/app/admin/actions"
+import { getSiteSettings } from "@/app/dashboard/settings-actions"
 import { useEffect, useRef } from "react"
 
 export default function LoginPage(props: {
@@ -43,11 +44,14 @@ export default function LoginPage(props: {
     const [turnstileEnabled, setTurnstileEnabled] = useState(false)
     const [turnstileSiteKey, setTurnstileSiteKey] = useState("")
     const [showTurnstileDialog, setShowTurnstileDialog] = useState(false)
+    const [openRegistration, setOpenRegistration] = useState(true)
+    const [allowPublicShorten, setAllowPublicShorten] = useState(true)
     const pendingFormDataRef = useRef<FormData | null>(null)
 
     // 页面加载完成后关闭全局 Loading 并加载安全设置
     useEffect(() => {
         setGlobalLoading(false)
+
         // 加载安全设置
         getPublicSecuritySettings()
             .then(settings => {
@@ -57,6 +61,16 @@ export default function LoginPage(props: {
             })
             .catch(err => {
                 console.error('Failed to load security settings:', err)
+            })
+
+        // 加载站点设置（检查是否开放注册）
+        getSiteSettings()
+            .then(settings => {
+                setOpenRegistration(settings.openRegistration)
+                setAllowPublicShorten(settings.allowPublicShorten)
+            })
+            .catch(err => {
+                console.error('Failed to load site settings:', err)
             })
     }, [setGlobalLoading])
 
@@ -107,6 +121,13 @@ export default function LoginPage(props: {
 
     // --- 2. 处理注册逻辑 ---
     const handleSignup = async (formData: FormData, turnstileToken?: string) => {
+        if (!openRegistration) {
+            toast.error("暂未开放用户注册", {
+                description: "管理员已关闭新用户注册功能"
+            })
+            return
+        }
+
         setErrors({})
         const email = formData.get('email') as string
         const password = formData.get('password') as string

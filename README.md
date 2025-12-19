@@ -189,7 +189,7 @@ with check ( is_admin() );
 
 -- 初始化默认设置
 insert into public.settings (key, value, description) values
-  ('site', '{"name": "LinkFlow", "subtitle": "下一代短链接生成器", "description": "让链接更短，让分享更简单", "keywords": "短链接,URL Shortener,Link Management,Next.js", "authorName": "池鱼", "authorUrl": "https://chiyu.it", "allowPublicShorten": true}', '站点配置'),
+  ('site', '{"name": "LinkFlow", "subtitle": "下一代短链接生成器", "description": "让链接更短，让分享更简单", "keywords": "短链接,URL Shortener,Link Management,Next.js", "authorName": "池鱼", "authorUrl": "https://chiyu.it", "allowPublicShorten": true, "openRegistration": true}', '站点配置'),
   ('links', '{"slugLength": 6, "enableClickStats": true, "defaultExpiration": 0}', '链接设置'),
   ('appearance', '{"primaryColor": "#1a1a1f", "themeMode": "system"}', '外观设置'),
   ('data', '{"autoCleanExpired": false, "expiredDays": 90}', '数据管理'),
