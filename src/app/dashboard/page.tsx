@@ -108,6 +108,8 @@ export default function Dashboard() {
                         <ActionScale
                             onMouseEnter={() => setIsHomeHovered(true)}
                             onMouseLeave={() => setIsHomeHovered(false)}
+                            onTouchStart={() => setIsHomeHovered(true)}
+                            onTouchEnd={() => setIsHomeHovered(false)}
                         >
                             <Button
                                 variant="outline"

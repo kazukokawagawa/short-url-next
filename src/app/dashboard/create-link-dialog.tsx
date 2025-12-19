@@ -145,6 +145,8 @@ export function CreateLinkDialog({ onSuccess }: { onSuccess?: () => void }) {
                         <ActionScale
                             onMouseEnter={() => setIsButtonHovered(true)}
                             onMouseLeave={() => setIsButtonHovered(false)}
+                            onTouchStart={() => setIsButtonHovered(true)}
+                            onTouchEnd={() => setIsButtonHovered(false)}
                         >
                             <LoadingButton
                                 loading={loading}

@@ -58,6 +58,8 @@ export function ShortenForm({ user }: { user: User | null }) {
                         className="relative inline-flex items-center justify-center w-12 h-full"
                         onMouseEnter={() => setIsHovered(true)}
                         onMouseLeave={() => setIsHovered(false)}
+                        onTouchStart={() => setIsHovered(true)}
+                        onTouchEnd={() => setIsHovered(false)}
                     >
                         <motion.span
                             initial={false}
@@ -168,6 +170,8 @@ export function ShortenForm({ user }: { user: User | null }) {
                     className="w-full gap-2"
                     onMouseEnter={() => setIsButtonHovered(true)}
                     onMouseLeave={() => setIsButtonHovered(false)}
+                    onTouchStart={() => setIsButtonHovered(true)}
+                    onTouchEnd={() => setIsButtonHovered(false)}
                 >
                     {loading ? (
                         <>

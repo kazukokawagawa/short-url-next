@@ -75,19 +75,34 @@ export function LinkCard({ link, isAdmin = false, onDeleteSuccess, index = 0 }: 
     return (
         <>
             <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={isFirstScreen ? { opacity: 1, y: 0 } : undefined}
-                whileInView={!isFirstScreen ? { opacity: 1, y: 0 } : undefined}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                initial={{ opacity: 0, y: 24, scale: 0.96 }}
+                animate={isFirstScreen ? { opacity: 1, y: 0, scale: 1 } : undefined}
+                whileInView={!isFirstScreen ? { opacity: 1, y: 0, scale: 1 } : undefined}
+                whileHover={{
+                    scale: 1.02,
+                    y: -4,
+                    transition: {
+                        type: "spring",
+                        stiffness: 400,
+                        damping: 25
+                    }
+                }}
+                whileTap={{
+                    scale: 0.98,
+                    transition: {
+                        type: "spring",
+                        stiffness: 500,
+                        damping: 30
+                    }
+                }}
                 viewport={{ once: true, margin: "0px", amount: 0.2 }}
                 transition={{
-                    duration: 0.3,
-                    ease: "easeOut",
-                    delay: isFirstScreen ? index * 0.05 : 0,
-                    scale: { duration: 0.15 }
+                    type: "spring",
+                    stiffness: 260,
+                    damping: 20,
+                    delay: isFirstScreen ? index * 0.06 : 0,
                 }}
-                className="group relative rounded-xl border bg-card p-4 shadow-sm transition-all hover:shadow-md hover:border-primary/20 cursor-default"
+                className="group relative rounded-xl border bg-card p-4 shadow-sm transition-shadow hover:shadow-lg hover:border-primary/20 cursor-default"
             >
                 {/* 主行：短链接 + 操作 */}
                 <div className="flex items-center justify-between gap-3">

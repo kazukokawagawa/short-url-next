@@ -38,6 +38,8 @@ export function SessionExpiredDialog({
                         onClick={() => router.push('/login')}
                         onMouseEnter={() => setIsHovered(true)}
                         onMouseLeave={() => setIsHovered(false)}
+                        onTouchStart={() => setIsHovered(true)}
+                        onTouchEnd={() => setIsHovered(false)}
                         className="relative overflow-hidden"
                     >
                         <motion.span

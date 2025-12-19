@@ -55,6 +55,8 @@ export function HomeClient({ siteName, siteDescription }: HomeClientProps) {
                                 className="md:h-10 md:px-4 md:py-2 gap-2"
                                 onMouseEnter={() => setHoveredButton('dashboard')}
                                 onMouseLeave={() => setHoveredButton(null)}
+                                onTouchStart={() => setHoveredButton('dashboard')}
+                                onTouchEnd={() => setHoveredButton(null)}
                                 onClick={() => {
                                     setGlobalLoading(true)
                                     router.push("/dashboard")
@@ -70,6 +72,8 @@ export function HomeClient({ siteName, siteDescription }: HomeClientProps) {
                             className="gap-2"
                             onMouseEnter={() => setHoveredButton('login')}
                             onMouseLeave={() => setHoveredButton(null)}
+                            onTouchStart={() => setHoveredButton('login')}
+                            onTouchEnd={() => setHoveredButton(null)}
                             onClick={() => {
                                 setGlobalLoading(true)
                                 router.push("/login")

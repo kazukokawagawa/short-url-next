@@ -137,6 +137,8 @@ export default function LoginPage(props: {
                     className="-ml-2 flex items-center gap-2 text-muted-foreground hover:text-foreground"
                     onMouseEnter={() => setIsBackButtonHovered(true)}
                     onMouseLeave={() => setIsBackButtonHovered(false)}
+                    onTouchStart={() => setIsBackButtonHovered(true)}
+                    onTouchEnd={() => setIsBackButtonHovered(false)}
                     onClick={() => {
                         setGlobalLoading(true)
                         router.push("/")
@@ -241,6 +243,8 @@ export default function LoginPage(props: {
                                 <ActionScale
                                     onHoverStart={() => setHoverState('login')}
                                     onHoverEnd={() => setHoverState('idle')}
+                                    onTouchStart={() => setHoverState('login')}
+                                    onTouchEnd={() => setHoverState('idle')}
                                     className="w-full"
                                     disabled={isLoggingIn || isSigningUp}
                                 >
@@ -270,6 +274,8 @@ export default function LoginPage(props: {
                                 <ActionScale
                                     onHoverStart={() => setHoverState('signup')}
                                     onHoverEnd={() => setHoverState('idle')}
+                                    onTouchStart={() => setHoverState('signup')}
+                                    onTouchEnd={() => setHoverState('idle')}
                                     className="w-full"
                                     disabled={isLoggingIn || isSigningUp}
                                 >
