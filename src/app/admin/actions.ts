@@ -13,6 +13,10 @@ export interface SiteSettings {
     authorName: string
     authorUrl: string
     allowPublicShorten: boolean
+    openRegistration: boolean
+    announcementEnabled: boolean
+    announcementTitle: string
+    announcementContent: string
 }
 
 export interface LinksSettings {
@@ -24,6 +28,7 @@ export interface LinksSettings {
 export interface AppearanceSettings {
     primaryColor: string
     themeMode: 'light' | 'dark' | 'system'
+    toastMethod: 'top-right' | 'top-center' | 'bottom-right' | 'bottom-center'
 }
 
 export interface DataSettings {
@@ -42,6 +47,9 @@ export interface SecuritySettings {
     turnstileSecretKey: string
     safeBrowsingEnabled: boolean
     safeBrowsingApiKey: string
+    blacklistSuffix: string
+    blacklistDomain: string
+    skipAllChecks: boolean
 }
 
 export interface AllSettings {
@@ -134,13 +142,30 @@ export async function getSettings(): Promise<{ data?: AllSettings, error?: strin
                 keywords: "短链接,URL Shortener,Link Management,Next.js",
                 authorName: "池鱼",
                 authorUrl: "https://chiyu.it",
-                allowPublicShorten: true
+                allowPublicShorten: true,
+                openRegistration: true,
+                announcementEnabled: false,
+                announcementTitle: "",
+                announcementContent: ""
             },
             links: settingsMap.links || { slugLength: 6, enableClickStats: true, defaultExpiration: 0 },
-            appearance: settingsMap.appearance || { primaryColor: "#1a1a1f", themeMode: "system" },
+            appearance: settingsMap.appearance || {
+                primaryColor: "#1a1a1f",
+                themeMode: "system",
+                toastMethod: "bottom-right"
+            },
             data: settingsMap.data || { autoCleanExpired: false, expiredDays: 90 },
             maintenance: settingsMap.maintenance || { enabled: false, message: "" },
-            security: settingsMap.security || { turnstileEnabled: false, turnstileSiteKey: "", turnstileSecretKey: "", safeBrowsingEnabled: false, safeBrowsingApiKey: "" }
+            security: settingsMap.security || {
+                turnstileEnabled: false,
+                turnstileSiteKey: "",
+                turnstileSecretKey: "",
+                safeBrowsingEnabled: false,
+                safeBrowsingApiKey: "",
+                blacklistSuffix: "",
+                blacklistDomain: "",
+                skipAllChecks: false
+            }
         }
     }
 }

@@ -9,7 +9,8 @@ import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
-import { ArrowLeft, Globe, Link2, Palette, Database, Wrench, LoaderCircle, Save, Check, Shield } from "lucide-react"
+import { ArrowLeft, Globe, Link2, Palette, Database, Wrench, LoaderCircle, Save, Check, Shield, Megaphone, Bell, Ban, AlertTriangle } from "lucide-react"
+import { Textarea } from "@/components/ui/textarea"
 import { FadeIn } from "@/components/animations/fade-in"
 import { useEffect, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
@@ -34,6 +35,10 @@ export default function AdminSettingsPage() {
     const [authorName, setAuthorName] = useState("池鱼")
     const [authorUrl, setAuthorUrl] = useState("https://chiyu.it")
     const [allowPublicShorten, setAllowPublicShorten] = useState(true)
+    const [openRegistration, setOpenRegistration] = useState(true)
+    const [announcementEnabled, setAnnouncementEnabled] = useState(false)
+    const [announcementTitle, setAnnouncementTitle] = useState("")
+    const [announcementContent, setAnnouncementContent] = useState("")
 
     // 链接设置
     const [slugLength, setSlugLength] = useState<number | "">(6)
@@ -43,6 +48,7 @@ export default function AdminSettingsPage() {
     // 外观设置
     const [primaryColor, setPrimaryColor] = useState("#1a1a1f")
     const [themeMode, setThemeMode] = useState<"light" | "dark" | "system">("system")
+    const [toastMethod, setToastMethod] = useState("bottom-right")
 
     // 数据管理
     const [autoCleanExpired, setAutoCleanExpired] = useState(false)
@@ -58,6 +64,9 @@ export default function AdminSettingsPage() {
     const [turnstileSecretKey, setTurnstileSecretKey] = useState("")
     const [safeBrowsingEnabled, setSafeBrowsingEnabled] = useState(false)
     const [safeBrowsingApiKey, setSafeBrowsingApiKey] = useState("")
+    const [blacklistSuffix, setBlacklistSuffix] = useState("")
+    const [blacklistDomain, setBlacklistDomain] = useState("")
+    const [skipAllChecks, setSkipAllChecks] = useState(false)
 
     // 动作状态
     const [exporting, setExporting] = useState(false)
@@ -152,12 +161,18 @@ export default function AdminSettingsPage() {
                 setAuthorName(settings.site.authorName || "池鱼")
                 setAuthorUrl(settings.site.authorUrl || "https://chiyu.it")
                 setAllowPublicShorten(settings.site.allowPublicShorten)
+                setOpenRegistration(settings.site.openRegistration ?? true)
+                setAnnouncementEnabled(settings.site.announcementEnabled ?? false)
+                setAnnouncementTitle(settings.site.announcementTitle ?? "")
+                setAnnouncementContent(settings.site.announcementContent ?? "")
                 // 链接设置
                 setSlugLength(settings.links.slugLength)
                 setDefaultExpiration(String(settings.links.defaultExpiration || 0))
                 setEnableClickStats(settings.links.enableClickStats)
                 // 外观设置
                 setPrimaryColor(settings.appearance.primaryColor)
+                setThemeMode(settings.appearance.themeMode)
+                setToastMethod(settings.appearance.toastMethod || "bottom-right")
                 // 数据管理
                 setAutoCleanExpired(settings.data.autoCleanExpired)
                 setExpiredDays(settings.data.expiredDays)
@@ -170,6 +185,9 @@ export default function AdminSettingsPage() {
                 setTurnstileSecretKey(settings.security.turnstileSecretKey)
                 setSafeBrowsingEnabled(settings.security.safeBrowsingEnabled ?? false)
                 setSafeBrowsingApiKey(settings.security.safeBrowsingApiKey ?? "")
+                setBlacklistSuffix(settings.security.blacklistSuffix ?? "")
+                setBlacklistDomain(settings.security.blacklistDomain ?? "")
+                setSkipAllChecks(settings.security.skipAllChecks ?? false)
             }
 
             setLoading(false)
@@ -221,7 +239,11 @@ export default function AdminSettingsPage() {
                 keywords: siteKeywords,
                 authorName: authorName,
                 authorUrl: authorUrl,
-                allowPublicShorten: allowPublicShorten
+                allowPublicShorten: allowPublicShorten,
+                openRegistration: openRegistration,
+                announcementEnabled: announcementEnabled,
+                announcementTitle: announcementTitle,
+                announcementContent: announcementContent
             },
             links: {
                 slugLength: safeSlugLength,
@@ -230,7 +252,8 @@ export default function AdminSettingsPage() {
             },
             appearance: {
                 primaryColor: primaryColor,
-                themeMode: themeMode
+                themeMode: themeMode,
+                toastMethod: toastMethod as any
             },
             data: {
                 autoCleanExpired: autoCleanExpired,
@@ -245,7 +268,10 @@ export default function AdminSettingsPage() {
                 turnstileSiteKey: turnstileSiteKey,
                 turnstileSecretKey: turnstileSecretKey,
                 safeBrowsingEnabled: safeBrowsingEnabled,
-                safeBrowsingApiKey: safeBrowsingApiKey
+                safeBrowsingApiKey: safeBrowsingApiKey,
+                blacklistSuffix: blacklistSuffix,
+                blacklistDomain: blacklistDomain,
+                skipAllChecks: skipAllChecks
             }
         }
 
@@ -379,16 +405,56 @@ export default function AdminSettingsPage() {
                             </div>
                             <div className="flex items-center justify-between rounded-lg border p-4">
                                 <div className="space-y-0.5">
-                                    <Label>允许公开缩短链接</Label>
+                                    <Label>开放用户注册</Label>
                                     <p className="text-sm text-muted-foreground">
-                                        未登录用户也可以使用短链接服务
+                                        允许新用户注册账号
                                     </p>
                                 </div>
                                 <Switch
-                                    checked={allowPublicShorten}
-                                    onCheckedChange={setAllowPublicShorten}
+                                    checked={openRegistration}
+                                    onCheckedChange={setOpenRegistration}
                                 />
                             </div>
+
+                            {/* 公告设置 */}
+                            <div className="flex items-center justify-between rounded-lg border p-4">
+                                <div className="space-y-0.5">
+                                    <div className="flex items-center gap-2">
+                                        <Megaphone className="h-4 w-4" />
+                                        <Label>公告弹窗</Label>
+                                    </div>
+                                    <p className="text-sm text-muted-foreground">
+                                        启用后将在首页向用户展示公告
+                                    </p>
+                                </div>
+                                <Switch
+                                    checked={announcementEnabled}
+                                    onCheckedChange={setAnnouncementEnabled}
+                                />
+                            </div>
+                            {announcementEnabled && (
+                                <div className="space-y-4 rounded-lg border p-4 bg-muted/30">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="announcementTitle">公告标题</Label>
+                                        <Input
+                                            id="announcementTitle"
+                                            value={announcementTitle}
+                                            onChange={(e) => setAnnouncementTitle(e.target.value)}
+                                            placeholder="输入公告标题"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="announcementContent">公告内容</Label>
+                                        <Textarea
+                                            id="announcementContent"
+                                            value={announcementContent}
+                                            onChange={(e) => setAnnouncementContent(e.target.value)}
+                                            placeholder="支持 HTML 格式内容"
+                                            className="min-h-[100px]"
+                                        />
+                                    </div>
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
                 </FadeIn>
@@ -408,45 +474,6 @@ export default function AdminSettingsPage() {
                             </div>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="slugLength">默认短码长度</Label>
-                                <div className="flex items-center gap-4">
-                                    <Input
-                                        id="slugLength"
-                                        type="number"
-                                        min={1}
-                                        max={30}
-                                        value={slugLength}
-                                        onChange={(e) => {
-                                            const value = e.target.value
-                                            if (value === "") {
-                                                setSlugLength("")
-                                            } else {
-                                                setSlugLength(Number(value))
-                                            }
-                                        }}
-                                        className="w-24"
-                                        autoComplete="off"
-                                    />
-                                    <span className="text-sm text-muted-foreground">字符 (1-30)</span>
-                                </div>
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="defaultExpiration">默认有效期</Label>
-                                <Select value={defaultExpiration} onValueChange={setDefaultExpiration}>
-                                    <SelectTrigger className="w-[180px]">
-                                        <SelectValue placeholder="选择默认有效期" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="0">永不过期</SelectItem>
-                                        <SelectItem value="60">1 小时</SelectItem>
-                                        <SelectItem value="1440">24 小时</SelectItem>
-                                        <SelectItem value="10080">7 天</SelectItem>
-                                        <SelectItem value="43200">30 天</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                <p className="text-sm text-muted-foreground">创建新链接时预设的过期时间</p>
-                            </div>
                             <div className="flex items-center justify-between rounded-lg border p-4">
                                 <div className="space-y-0.5">
                                     <Label>启用点击统计</Label>
@@ -459,6 +486,48 @@ export default function AdminSettingsPage() {
                                     onCheckedChange={setEnableClickStats}
                                 />
                             </div>
+                            <div className="grid gap-4 md:grid-cols-2">
+                                <div className="space-y-2">
+                                    <Label htmlFor="slugLength">默认短码长度</Label>
+                                    <div className="flex items-center gap-4">
+                                        <Input
+                                            id="slugLength"
+                                            type="number"
+                                            min={1}
+                                            max={30}
+                                            value={slugLength}
+                                            onChange={(e) => {
+                                                const value = e.target.value
+                                                if (value === "") {
+                                                    setSlugLength("")
+                                                } else {
+                                                    setSlugLength(Number(value))
+                                                }
+                                            }}
+                                            className="w-24"
+                                            autoComplete="off"
+                                        />
+                                        <span className="text-sm text-muted-foreground">字符 (1-30)</span>
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="defaultExpiration">默认有效期</Label>
+                                    <Select value={defaultExpiration} onValueChange={setDefaultExpiration}>
+                                        <SelectTrigger className="w-[180px]">
+                                            <SelectValue placeholder="选择默认有效期" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="0">永不过期</SelectItem>
+                                            <SelectItem value="60">1 小时</SelectItem>
+                                            <SelectItem value="1440">24 小时</SelectItem>
+                                            <SelectItem value="10080">7 天</SelectItem>
+                                            <SelectItem value="43200">30 天</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <p className="text-sm text-muted-foreground">创建新链接时预设的过期时间</p>
+                                </div>
+                            </div>
+
                         </CardContent>
                     </Card>
                 </FadeIn>
@@ -566,6 +635,30 @@ export default function AdminSettingsPage() {
                                     </SelectContent>
                                 </Select>
                             </div>
+
+                            {/* Toast 位置设置 */}
+                            <div className="flex items-center justify-between rounded-lg border p-4">
+                                <div className="space-y-0.5">
+                                    <div className="flex items-center gap-2">
+                                        <Bell className="h-4 w-4" />
+                                        <Label>通知弹窗位置</Label>
+                                    </div>
+                                    <p className="text-sm text-muted-foreground">
+                                        设置全局 Toast 通知的弹出位置
+                                    </p>
+                                </div>
+                                <Select value={toastMethod} onValueChange={setToastMethod}>
+                                    <SelectTrigger className="w-[180px]">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="top-right">右上角 (Top Right)</SelectItem>
+                                        <SelectItem value="top-center">顶部居中 (Top Center)</SelectItem>
+                                        <SelectItem value="bottom-right">右下角 (Bottom Right)</SelectItem>
+                                        <SelectItem value="bottom-center">底部居中 (Bottom Center)</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </CardContent>
                     </Card>
                 </FadeIn>
@@ -597,71 +690,73 @@ export default function AdminSettingsPage() {
                                     onCheckedChange={setAutoCleanExpired}
                                 />
                             </div>
-                            {autoCleanExpired && (
-                                <div className="space-y-2">
-                                    <Label htmlFor="expiredDays">过期天数</Label>
-                                    <div className="flex items-center gap-4">
-                                        <Input
-                                            id="expiredDays"
-                                            type="number"
-                                            min={1}
-                                            value={expiredDays}
-                                            onChange={(e) => {
-                                                const val = e.target.value
-                                                if (val === "") {
-                                                    setExpiredDays("")
-                                                    return
-                                                }
-                                                const num = parseInt(val)
-                                                if (!isNaN(num) && num > 0) {
-                                                    setExpiredDays(num)
-                                                }
-                                            }}
-                                            onBlur={() => {
-                                                if (expiredDays === "" || expiredDays <= 0) {
-                                                    setExpiredDays(90)
-                                                    toast.error("过期天数必须大于 0")
-                                                }
-                                            }}
-                                            className="w-24"
-                                            autoComplete="off"
-                                        />
-                                        <span className="text-sm text-muted-foreground">天未被访问则清理</span>
+                            <div className="flex flex-wrap items-center justify-end gap-4">
+                                {autoCleanExpired && (
+                                    <div className="flex items-center gap-2">
+                                        <Label htmlFor="expiredDays" className="whitespace-nowrap">过期天数</Label>
+                                        <div className="flex items-center gap-2">
+                                            <Input
+                                                id="expiredDays"
+                                                type="number"
+                                                min={1}
+                                                value={expiredDays}
+                                                onChange={(e) => {
+                                                    const val = e.target.value
+                                                    if (val === "") {
+                                                        setExpiredDays("")
+                                                        return
+                                                    }
+                                                    const num = parseInt(val)
+                                                    if (!isNaN(num) && num > 0) {
+                                                        setExpiredDays(num)
+                                                    }
+                                                }}
+                                                onBlur={() => {
+                                                    if (expiredDays === "" || expiredDays <= 0) {
+                                                        setExpiredDays(90)
+                                                        toast.error("过期天数必须大于 0")
+                                                    }
+                                                }}
+                                                className="w-20 h-8"
+                                                autoComplete="off"
+                                            />
+                                            <span className="text-sm text-muted-foreground whitespace-nowrap">天</span>
+                                        </div>
                                     </div>
+                                )}
+                                <div className="flex gap-2">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={handleExport}
+                                        disabled={exporting}
+                                    >
+                                        {exporting ? (
+                                            <>
+                                                <LoaderCircle className="mr-2 h-3 w-3 animate-spin" />
+                                                导出中...
+                                            </>
+                                        ) : (
+                                            "导出所有链接"
+                                        )}
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30 border-red-200 dark:border-red-900/30"
+                                        onClick={handleClean}
+                                        disabled={cleaning}
+                                    >
+                                        {cleaning ? (
+                                            <>
+                                                <LoaderCircle className="mr-2 h-3 w-3 animate-spin" />
+                                                清理中...
+                                            </>
+                                        ) : (
+                                            "清理已过期链接"
+                                        )}
+                                    </Button>
                                 </div>
-                            )}
-                            <div className="flex gap-2">
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={handleExport}
-                                    disabled={exporting}
-                                >
-                                    {exporting ? (
-                                        <>
-                                            <LoaderCircle className="mr-2 h-3 w-3 animate-spin" />
-                                            导出中...
-                                        </>
-                                    ) : (
-                                        "导出所有链接"
-                                    )}
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30 border-red-200 dark:border-red-900/30"
-                                    onClick={handleClean}
-                                    disabled={cleaning}
-                                >
-                                    {cleaning ? (
-                                        <>
-                                            <LoaderCircle className="mr-2 h-3 w-3 animate-spin" />
-                                            清理中...
-                                        </>
-                                    ) : (
-                                        "清理已过期链接"
-                                    )}
-                                </Button>
                             </div>
                         </CardContent>
                     </Card>
@@ -798,11 +893,69 @@ export default function AdminSettingsPage() {
                                     </p>
                                 </div>
                             )}
+
+                            {/* 分隔线 */}
+                            <div className="border-t my-2" />
+
+                            {/* 黑名单设置 */}
+                            <div className="space-y-4">
+                                <div className="space-y-2">
+                                    <div className="flex items-center gap-2">
+                                        <Ban className="h-4 w-4" />
+                                        <Label htmlFor="blacklistSuffix">黑名单后缀</Label>
+                                    </div>
+                                    <Textarea
+                                        id="blacklistSuffix"
+                                        value={blacklistSuffix}
+                                        onChange={(e) => setBlacklistSuffix(e.target.value)}
+                                        placeholder=".exe, .apk, .bat"
+                                        className="font-mono text-sm"
+                                    />
+                                    <p className="text-xs text-muted-foreground">
+                                        禁止缩短以此类后缀结尾的链接，多个后缀用英文逗号分隔
+                                    </p>
+                                </div>
+                                <div className="space-y-2">
+                                    <div className="flex items-center gap-2">
+                                        <Ban className="h-4 w-4" />
+                                        <Label htmlFor="blacklistDomain">黑名单域名</Label>
+                                    </div>
+                                    <Textarea
+                                        id="blacklistDomain"
+                                        value={blacklistDomain}
+                                        onChange={(e) => setBlacklistDomain(e.target.value)}
+                                        placeholder="example.com, malicious-site.net"
+                                        className="font-mono text-sm"
+                                    />
+                                    <p className="text-xs text-muted-foreground">
+                                        禁止缩短包含这些域名的链接，多个域名用英文逗号分隔
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* 分隔线 */}
+                            <div className="border-t my-2" />
+
+                            {/* 跳过检查 */}
+                            <div className="flex items-center justify-between rounded-lg border border-red-200 bg-red-50 dark:bg-red-950/20 dark:border-red-900/30 p-4">
+                                <div className="space-y-0.5">
+                                    <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
+                                        <AlertTriangle className="h-4 w-4" />
+                                        <Label className="text-red-600 dark:text-red-400">设置跳过所有检查</Label>
+                                    </div>
+                                    <p className="text-sm text-red-600/80 dark:text-red-400/80">
+                                        危险：开启后将跳过所有安全检查（Safe Browsing、黑名单等），仅用于特殊场景
+                                    </p>
+                                </div>
+                                <Switch
+                                    checked={skipAllChecks}
+                                    onCheckedChange={setSkipAllChecks}
+                                />
+                            </div>
                         </CardContent>
                     </Card>
                 </FadeIn>
             </div>
-
             {/* 固定在右下角的保存按钮 */}
             <FadeIn delay={0.5}>
                 <div className="fixed bottom-8 right-8">
