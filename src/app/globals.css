@@ -124,6 +124,15 @@
     @apply bg-background text-foreground;
     padding-bottom: 3rem;
   }
+
+  /* 主题切换平滑过渡 */
+  html.theme-transitioning,
+  html.theme-transitioning *,
+  html.theme-transitioning *::before,
+  html.theme-transitioning *::after {
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.15s ease !important;
+    transition-delay: 0s !important;
+  }
 }
 
 @layer utilities {
@@ -167,5 +176,51 @@
     /* 变细 */
     scrollbar-color: var(--border) transparent;
     /* 滑块颜色 轨道颜色 */
+  }
+
+  /* 卡片悬浮动画 */
+  .card-hover {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 10px -5px rgba(0, 0, 0, 0.04);
+  }
+
+  .dark .card-hover:hover {
+    box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.3), 0 4px 10px -5px rgba(0, 0, 0, 0.2);
+  }
+
+  /* 涟漪效果容器 */
+  .ripple-container {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .ripple-container::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at var(--ripple-x, 50%) var(--ripple-y, 50%), currentColor 0%, transparent 70%);
+    opacity: 0;
+    transform: scale(0);
+    transition: opacity 0.3s ease, transform 0.5s ease;
+    pointer-events: none;
+  }
+
+  .ripple-container:active::after {
+    opacity: 0.1;
+    transform: scale(2);
+    transition: opacity 0s, transform 0s;
+  }
+
+  /* 按钮按下效果 */
+  .btn-press {
+    transition: transform 0.1s ease;
+  }
+
+  .btn-press:active {
+    transform: scale(0.97);
   }
 }

@@ -13,6 +13,7 @@ import { LoadingProvider } from "@/components/providers/loading-provider";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { MaintenanceGuard } from "@/components/maintenance-guard";
 import { createClient } from "@/utils/supabase/server";
+import { GridBackground } from "@/components/grid-background";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -102,19 +103,21 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <ThemeColorProvider primaryColor={appearanceConfig.primaryColor} />
-          {/* 维护模式遮罩 - 仅通过路径白名单放行 Admin 页面，管理员可绕过 */}
-          <MaintenanceGuard
-            enabled={maintenanceConfig.enabled}
-            message={maintenanceConfig.message}
-            bypass={isAdmin}
-          />
-          <LoadingProvider>
-            {/* 核心修改：用 main 包裹 children 并添加 flex-1 */}
-            <main className="flex-1 w-full">
-              {children}
-            </main>
-          </LoadingProvider>
-          <SiteFooter />
+          {/* 全局拼图背景 */}
+          <GridBackground className="flex flex-col min-h-screen">
+            {/* 维护模式遮罩 */}
+            <MaintenanceGuard
+              enabled={maintenanceConfig.enabled}
+              message={maintenanceConfig.message}
+              bypass={isAdmin}
+            />
+            <LoadingProvider>
+              <main className="flex-1 w-full">
+                {children}
+              </main>
+            </LoadingProvider>
+            <SiteFooter />
+          </GridBackground>
           <Toaster position={appearanceConfig.toastPosition} />
           <React.Suspense fallback={null}>
             <VerificationToast />
@@ -125,3 +128,4 @@ export default async function RootLayout({
     </html>
   );
 }
+

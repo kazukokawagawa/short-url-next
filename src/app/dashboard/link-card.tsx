@@ -4,7 +4,7 @@ import { formatDistanceToNow } from 'date-fns'
 import { zhCN } from 'date-fns/locale'
 import { CopyButton } from "@/components/copy-button"
 import { motion } from "framer-motion"
-import { Link2, MoreVertical, ExternalLink, Clock, MousePointerClick, Mail, Trash2, Timer, Lock } from "lucide-react"
+import { Link2, MoreVertical, ExternalLink, Clock, MousePointerClick, Mail, Trash2, Timer, Lock, QrCode } from "lucide-react"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -30,6 +30,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { QRCodeDialog } from "@/components/qrcode-dialog"
 
 interface LinkCardProps {
     link: {
@@ -56,6 +57,9 @@ export function LinkCard({ link, isAdmin = false, onDeleteSuccess, index = 0, sh
     const [isDeleting, setIsDeleting] = useState(false)
     const [showSessionExpired, setShowSessionExpired] = useState(false)
     const [resetPasswordDialogOpen, setResetPasswordDialogOpen] = useState(false)
+    const [qrDialogOpen, setQrDialogOpen] = useState(false)
+
+    const fullUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://short.link'}/${link.slug}`
 
     const handleDelete = async () => {
         setIsDeleting(true)
@@ -238,6 +242,15 @@ export function LinkCard({ link, isAdmin = false, onDeleteSuccess, index = 0, sh
                                     </DropdownMenuItem>
                                 )}
 
+                                {/* 二维码 */}
+                                <DropdownMenuItem
+                                    onClick={() => setQrDialogOpen(true)}
+                                    className="flex items-center gap-2"
+                                >
+                                    <QrCode className="h-4 w-4" />
+                                    <span>生成二维码</span>
+                                </DropdownMenuItem>
+
                                 {/* 重置密码按钮 */}
                                 <DropdownMenuItem
                                     onClick={() => setResetPasswordDialogOpen(true)}
@@ -310,6 +323,14 @@ export function LinkCard({ link, isAdmin = false, onDeleteSuccess, index = 0, sh
                 linkId={link.id}
                 currentPasswordType={link.password_type}
                 onSuccess={onDeleteSuccess}
+            />
+
+            {/* 二维码弹窗 */}
+            <QRCodeDialog
+                open={qrDialogOpen}
+                onOpenChange={setQrDialogOpen}
+                url={fullUrl}
+                slug={link.slug}
             />
         </>
     )

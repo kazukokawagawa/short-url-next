@@ -12,7 +12,7 @@ export async function SiteFooter() {
     const siteConfig = await getSiteConfig()
 
     return (
-        <footer className="w-full border-t bg-background py-6 text-center text-xs text-muted-foreground">
+        <footer className="w-full border-t border-transparent py-6 text-center text-xs text-muted-foreground">
             <div className="container mx-auto">
                 <p>
                     &copy; {new Date().getFullYear()} {siteConfig.name}. All rights reserved.

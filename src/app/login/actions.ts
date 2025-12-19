@@ -113,6 +113,17 @@ export async function signup(formData: FormData) {
                     console.error('Turnstile verification failed:', verifyResult)
                     return { error: "人机验证失败，请重试" }
                 }
+
+                // Turnstile 验证成功后，检查邮箱是否已存在
+                const { data: existingUser } = await supabaseAdmin
+                    .from('profiles')
+                    .select('id')
+                    .eq('email', email)
+                    .single()
+
+                if (existingUser) {
+                    return { error: "该邮箱已被注册，请直接登录", emailExists: true }
+                }
             } catch (error) {
                 console.error('Turnstile verification error:', error)
                 return { error: "验证服务暂时不可用，请稍后重试" }
