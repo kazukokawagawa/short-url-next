@@ -130,3 +130,36 @@ export async function getAnnouncementConfig(): Promise<AnnouncementConfig> {
         return defaultAnnouncementConfig
     }
 }
+// Maintenance Configuration
+export interface MaintenanceConfig {
+    enabled: boolean
+    message: string
+}
+
+const defaultMaintenanceConfig: MaintenanceConfig = {
+    enabled: false,
+    message: ""
+}
+
+export async function getMaintenanceConfig(): Promise<MaintenanceConfig> {
+    try {
+        const supabase = await createClient()
+
+        const { data, error } = await supabase
+            .from('settings')
+            .select('value')
+            .eq('key', 'maintenance')
+            .single()
+
+        if (error || !data) {
+            return defaultMaintenanceConfig
+        }
+
+        return {
+            ...defaultMaintenanceConfig,
+            ...data.value
+        }
+    } catch {
+        return defaultMaintenanceConfig
+    }
+}

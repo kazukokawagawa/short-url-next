@@ -3,9 +3,15 @@
 import { createClient } from "@/utils/supabase/server"
 import { revalidatePath } from "next/cache"
 import { getFriendlyErrorMessage } from "@/utils/error-mapping"
-import { AnnouncementConfig } from "@/lib/site-config"
 
 // 设置类型定义
+export interface AnnouncementConfig {
+    enabled: boolean
+    content: string
+    type: "default" | "destructive" | "outline" | "secondary"
+    duration?: number
+}
+
 export interface SiteSettings {
     name: string
     subtitle: string

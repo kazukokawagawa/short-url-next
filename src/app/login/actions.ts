@@ -10,7 +10,7 @@ export async function login(formData: FormData) {
     const email = formData.get('email') as string
     const password = formData.get('password') as string
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data: authData, error } = await supabase.auth.signInWithPassword({
         email,
         password,
     })
@@ -18,6 +18,25 @@ export async function login(formData: FormData) {
     if (error) {
         // 2. 使用工具函数转换错误信息
         return { error: getFriendlyErrorMessage(error) }
+    }
+
+    // 3. 检查维护模式
+    const { getMaintenanceConfig } = await import("@/lib/site-config")
+    const maintenanceConfig = await getMaintenanceConfig()
+
+    if (maintenanceConfig.enabled) {
+        // 检查用户角色
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', authData.user.id)
+            .single()
+
+        if (profile?.role !== 'admin') {
+            // 如果不是管理员，强制登出并报错
+            await supabase.auth.signOut()
+            return { error: maintenanceConfig.message || "系统维护中，暂时无法登录" }
+        }
     }
 
     revalidatePath('/', 'layout')
