@@ -97,10 +97,6 @@ export default function Dashboard() {
         setLinks(linksData || [])
     }
 
-    if (isGlobalLoading) {
-        return null // 全局加载中，隐藏当前页面内容以实现无缝切换
-    }
-
     if (loading) {
         return <SmartLoading />
     }

@@ -44,7 +44,6 @@ export default function AdminPage() {
         checkAdmin()
     }, [router, setGlobalLoading])
 
-    if (isGlobalLoading) return null
     if (loading) return <SmartLoading />
 
     const container = {

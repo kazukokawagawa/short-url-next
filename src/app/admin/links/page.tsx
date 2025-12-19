@@ -54,7 +54,6 @@ export default function AdminLinksPage() {
         refreshLinks()
     }, [router, setGlobalLoading])
 
-    if (isGlobalLoading) return null
     if (loading) {
         return <SmartLoading />
     }

@@ -184,8 +184,6 @@ export default function LoginPage(props: {
         }
     }
 
-    if (isGlobalLoading) return null // 全局 Loading 时隐藏页面
-
     return (
         <div className="relative flex min-h-screen items-center justify-center bg-background">
             {/* --- ✨ 新增：返回首页按钮 --- */}
