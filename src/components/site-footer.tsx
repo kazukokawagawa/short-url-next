@@ -36,7 +36,7 @@ export async function SiteFooter() {
                                     <span>v{process.env.NEXT_PUBLIC_APP_VERSION}</span>
                                     {/* 如果是生产环境，显示 Commit Hash 的前几位 */}
                                     {process.env.NEXT_PUBLIC_COMMIT_HASH !== 'dev-build' && (
-                                        <span className="font-mono text-[10px] opacity-70">
+                                        <span className="font-mono text-[10px] text-foreground/60">
                                             ({process.env.NEXT_PUBLIC_COMMIT_HASH})
                                         </span>
                                     )}

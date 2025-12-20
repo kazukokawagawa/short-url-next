@@ -3,14 +3,19 @@
 import { motion, AnimatePresence } from "framer-motion"
 import { LoaderCircle, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { useLoading } from "@/components/providers/loading-provider"
+import { useContext } from "react"
+import { LoadingContext } from "@/components/providers/loading-provider"
 
 interface SmartLoadingProps {
     visible?: boolean
 }
 
 export function SmartLoading({ visible = true }: SmartLoadingProps) {
-    const { message, showContent, showRefresh } = useLoading()
+    // 安全地获取 context，如果没有 Provider 则使用默认值
+    const context = useContext(LoadingContext)
+    const message = context?.message ?? "正在加载..."
+    const showContent = context?.showContent ?? false
+    const showRefresh = context?.showRefresh ?? false
 
     return (
         <div
@@ -57,5 +62,3 @@ export function SmartLoading({ visible = true }: SmartLoadingProps) {
         </div>
     )
 }
-
-

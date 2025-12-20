@@ -1,8 +1,8 @@
 'use client'
 
 import { createClient } from "@/utils/supabase/client"
-import Link from "next/link"
 import { useRouter } from "next/navigation"
+import dynamic from "next/dynamic"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ShortenForm } from "./shorten-form"
@@ -10,26 +10,29 @@ import { FadeIn } from "@/components/animations/fade-in"
 import { useEffect, useState } from "react"
 import { User } from "@supabase/supabase-js"
 import { TextArrowIcon } from "@/components/text-arrow-icon"
-import { SmartLoading } from "@/components/smart-loading"
 import { useLoading } from "@/components/providers/loading-provider"
-import { DecorativeShapes } from "@/components/decorative-shapes"
-
 import { toast } from "sonner"
-
 import { AnnouncementConfig } from "@/lib/site-config"
+
+// 动态导入装饰图形组件，避免阻塞首屏渲染
+const DecorativeShapes = dynamic(
+    () => import('@/components/decorative-shapes').then(m => ({ default: m.DecorativeShapes })),
+    { ssr: false }
+)
 
 interface HomeClientProps {
     siteName: string
     siteDescription: string
     announcementConfig: AnnouncementConfig
+    allowPublicShorten: boolean
 }
 
-export function HomeClient({ siteName, siteDescription, announcementConfig }: HomeClientProps) {
+export function HomeClient({ siteName, siteDescription, announcementConfig, allowPublicShorten }: HomeClientProps) {
     const [user, setUser] = useState<User | null>(null)
     const [loading, setLoading] = useState(true)
     const [hoveredButton, setHoveredButton] = useState<'login' | 'dashboard' | null>(null)
     const router = useRouter()
-    const { isLoading: isGlobalLoading, setIsLoading: setGlobalLoading } = useLoading()
+    const { setIsLoading: setGlobalLoading } = useLoading()
 
     useEffect(() => {
         async function getUser() {
@@ -71,7 +74,8 @@ export function HomeClient({ siteName, siteDescription, announcementConfig }: Ho
         }
     }, [announcementConfig])
 
-    if (loading) return <SmartLoading />
+    // 如果正在加载用户状态，不显示全屏 loading，仅隐藏用户相关UI
+    // 主要内容（Card）仍然渲染，提升LCP
 
     return (
         <>
@@ -139,7 +143,7 @@ export function HomeClient({ siteName, siteDescription, announcementConfig }: Ho
                         </CardHeader>
                         <CardContent>
                             <FadeIn delay={0.3}>
-                                <ShortenForm user={user} />
+                                <ShortenForm user={user} allowPublicShorten={allowPublicShorten} />
                             </FadeIn>
                         </CardContent>
                     </Card>

@@ -30,7 +30,7 @@ export const viewport: Viewport = {
   themeColor: "#000000",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
+  // 移除 maximumScale 限制，允许低视力用户缩放页面
 };
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -84,6 +84,21 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* 字体预连接优化 */}
+        <link rel="preconnect" href="https://cdn.jsdmirror.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://cdn.jsdmirror.com" />
+        {/* 字体预加载 */}
+        <link
+          rel="preload"
+          as="style"
+          href="https://cdn.jsdmirror.com/gh/CYYYY5/chiyupic@main/fonts/vivosans.css"
+        />
+        <link
+          rel="preload"
+          as="style"
+          href="https://cdn.jsdmirror.com/gh/CYYYY5/chiyupic@main/fonts/Lexend.css"
+        />
+        {/* 字体样式表 */}
         <link
           rel="stylesheet"
           href="https://cdn.jsdmirror.com/gh/CYYYY5/chiyupic@main/fonts/vivosans.css"
