@@ -84,28 +84,15 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        {/* 字体预连接优化 */}
+        {/* 预连接CDN以加速字体加载 */}
         <link rel="preconnect" href="https://cdn.jsdmirror.com" crossOrigin="anonymous" />
-        <link rel="dns-prefetch" href="https://cdn.jsdmirror.com" />
-        {/* 字体预加载 */}
+        {/* 预加载LCP关键字体 (ExtraBold用于标题) */}
         <link
           rel="preload"
-          as="style"
-          href="https://cdn.jsdmirror.com/gh/CYYYY5/chiyupic@main/fonts/vivosans.css"
-        />
-        <link
-          rel="preload"
-          as="style"
-          href="https://cdn.jsdmirror.com/gh/CYYYY5/chiyupic@main/fonts/Lexend.css"
-        />
-        {/* 字体样式表 */}
-        <link
-          rel="stylesheet"
-          href="https://cdn.jsdmirror.com/gh/CYYYY5/chiyupic@main/fonts/vivosans.css"
-        />
-        <link
-          rel="stylesheet"
-          href="https://cdn.jsdmirror.com/gh/CYYYY5/chiyupic@main/fonts/Lexend.css"
+          as="font"
+          type="font/woff2"
+          href="https://cdn.jsdmirror.com/gh/CYYYY5/chiyupic@main/fonts/vivosans/vivoSans-ExtraBold.woff2"
+          crossOrigin="anonymous"
         />
       </head>
       <body

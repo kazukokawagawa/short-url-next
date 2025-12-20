@@ -391,6 +391,10 @@ alter table public.profiles enable row level security;
 
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: (同本地)
 
+- `SUPABASE_SERVICE_ROLE_KEY`: (同本地)
+
+- `SITE_URL`: (同本地)
+
 4. **点击 Deploy**: 等待构建完成即可。
 
 ## 📂目录结构
