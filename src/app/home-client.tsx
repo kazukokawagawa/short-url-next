@@ -21,13 +21,12 @@ const DecorativeShapes = dynamic(
 )
 
 interface HomeClientProps {
-    siteName: string
-    siteDescription: string
     announcementConfig: AnnouncementConfig
     allowPublicShorten: boolean
+    children: React.ReactNode
 }
 
-export function HomeClient({ siteName, siteDescription, announcementConfig, allowPublicShorten }: HomeClientProps) {
+export function HomeClient({ announcementConfig, allowPublicShorten, children }: HomeClientProps) {
     const [user, setUser] = useState<User | null>(null)
     const [loading, setLoading] = useState(true)
     const [hoveredButton, setHoveredButton] = useState<'login' | 'dashboard' | null>(null)
@@ -86,59 +85,52 @@ export function HomeClient({ siteName, siteDescription, announcementConfig, allo
                 {/* 顶部导航区 */}
                 {!loading && (
                     <FadeIn delay={0} className="absolute top-6 right-6 md:top-8 md:right-8 z-20">
-                        {user ? (
-                            <div className="flex items-center gap-4">
-                                <span className="text-sm text-muted-foreground hidden md:inline-block">
-                                    {user.email}
-                                </span>
+                        <div className="flex items-center gap-4">
+                            {user ? (
+                                <>
+                                    <span className="text-sm text-muted-foreground hidden md:inline-block">
+                                        {user.email}
+                                    </span>
+                                    <Button
+                                        size="sm"
+                                        className="md:h-10 md:px-4 md:py-2 gap-2"
+                                        onMouseEnter={() => setHoveredButton('dashboard')}
+                                        onMouseLeave={() => setHoveredButton(null)}
+                                        onTouchStart={() => setHoveredButton('dashboard')}
+                                        onTouchEnd={() => setHoveredButton(null)}
+                                        onClick={() => {
+                                            setGlobalLoading(true)
+                                            router.push("/dashboard")
+                                        }}
+                                    >
+                                        <TextArrowIcon isHovered={hoveredButton === 'dashboard'} text="控制台" />
+                                    </Button>
+                                </>
+                            ) : (
                                 <Button
+                                    variant="outline"
                                     size="sm"
-                                    className="md:h-10 md:px-4 md:py-2 gap-2"
-                                    onMouseEnter={() => setHoveredButton('dashboard')}
+                                    className="gap-2"
+                                    onMouseEnter={() => setHoveredButton('login')}
                                     onMouseLeave={() => setHoveredButton(null)}
-                                    onTouchStart={() => setHoveredButton('dashboard')}
+                                    onTouchStart={() => setHoveredButton('login')}
                                     onTouchEnd={() => setHoveredButton(null)}
                                     onClick={() => {
                                         setGlobalLoading(true)
-                                        router.push("/dashboard")
+                                        router.push("/login")
                                     }}
                                 >
-                                    <TextArrowIcon isHovered={hoveredButton === 'dashboard'} text="控制台" />
+                                    <TextArrowIcon isHovered={hoveredButton === 'login'} text="登录" />
                                 </Button>
-                            </div>
-                        ) : (
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                className="gap-2"
-                                onMouseEnter={() => setHoveredButton('login')}
-                                onMouseLeave={() => setHoveredButton(null)}
-                                onTouchStart={() => setHoveredButton('login')}
-                                onTouchEnd={() => setHoveredButton(null)}
-                                onClick={() => {
-                                    setGlobalLoading(true)
-                                    router.push("/login")
-                                }}
-                            >
-                                <TextArrowIcon isHovered={hoveredButton === 'login'} text="登录" />
-                            </Button>
-                        )}
+                            )}
+                        </div>
                     </FadeIn>
                 )}
 
                 {/* 核心卡片区域 */}
                 <div className="w-full max-w-md z-10">
                     <Card className="w-full border-0 shadow-none bg-transparent sm:bg-card sm:border sm:shadow-sm transition-shadow duration-300 hover:sm:shadow-lg">
-                        <CardHeader className="text-center pb-2 sm:pb-6">
-                            <CardTitle className="text-3xl font-extrabold tracking-tight lg:text-4xl">
-                                {siteName}
-                            </CardTitle>
-                            <FadeIn delay={0.05} duration={0.2}>
-                                <CardDescription className="text-base mt-2">
-                                    {siteDescription}
-                                </CardDescription>
-                            </FadeIn>
-                        </CardHeader>
+                        {children}
                         <CardContent>
                             <FadeIn delay={0.3}>
                                 <ShortenForm user={user} allowPublicShorten={allowPublicShorten} />
