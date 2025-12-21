@@ -1,0 +1,4 @@
+name = "short-url-next"
+compatibility_date = "2025-12-21"
+compatibility_flags = ["nodejs_compat"] # Next.js 需要 Node.js 兼容层
+pages_build_output_dir = "public" # 👈 指向适配器生成的目录

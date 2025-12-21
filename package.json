@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev --webpack",
     "build": "next build --webpack",
+    "pages:build": "npx @cloudflare/next-on-pages",
     "postbuild": "next-sitemap",
     "start": "next start",
     "lint": "eslint"
