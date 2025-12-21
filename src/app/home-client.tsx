@@ -130,12 +130,10 @@ export function HomeClient({ siteName, siteDescription, announcementConfig, allo
                 <div className="w-full max-w-md z-10">
                     <Card className="w-full border-0 shadow-none bg-transparent sm:bg-card sm:border sm:shadow-sm transition-shadow duration-300 hover:sm:shadow-lg">
                         <CardHeader className="text-center pb-2 sm:pb-6">
-                            <FadeIn delay={0.1}>
-                                <CardTitle className="text-3xl font-extrabold tracking-tight lg:text-4xl">
-                                    {siteName}
-                                </CardTitle>
-                            </FadeIn>
-                            <FadeIn delay={0.2}>
+                            <CardTitle className="text-3xl font-extrabold tracking-tight lg:text-4xl">
+                                {siteName}
+                            </CardTitle>
+                            <FadeIn delay={0.05} duration={0.2}>
                                 <CardDescription className="text-base mt-2">
                                     {siteDescription}
                                 </CardDescription>

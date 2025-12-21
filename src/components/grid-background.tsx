@@ -1,4 +1,4 @@
-'use client'
+// 服务端组件 - 纯CSS背景，无需客户端JavaScript
 
 import { cn } from '@/lib/utils'
 
