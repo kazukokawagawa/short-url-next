@@ -1,7 +1,7 @@
 'use client'
 
 import { createClient } from "@/utils/supabase/client"
-import { LinksTable } from "./links-table"
+import { LinksTable, Link } from "./links-table"
 import { useRouter } from "next/navigation"
 import { signOut, getLinkSettings } from "./actions"
 import { Button } from "@/components/ui/button"
@@ -10,22 +10,20 @@ import { ActionScale } from "@/components/action-scale"
 import { FadeIn } from "@/components/animations/fade-in"
 import { useEffect, useState } from "react"
 import { User } from "@supabase/supabase-js"
-import { LoaderCircle, ShieldCheck, LogOut } from "lucide-react"
-import { motion } from "framer-motion"
-import Link from "next/link"
+import { ShieldCheck, LogOut } from "lucide-react"
 import { HomeArrowLeftIcon } from "@/components/home-arrow-left-icon"
 import { SmartLoading } from "@/components/smart-loading"
 import { useLoading } from "@/components/providers/loading-provider"
 
 export default function Dashboard() {
     const [user, setUser] = useState<User | null>(null)
-    const [links, setLinks] = useState<any[]>([])
+    const [links, setLinks] = useState<Link[]>([])
     const [loading, setLoading] = useState(true)
     const [isAdmin, setIsAdmin] = useState(false)
     const [isHomeHovered, setIsHomeHovered] = useState(false)
     const [enableClickStats, setEnableClickStats] = useState(true)
     const router = useRouter()
-    const { isLoading: isGlobalLoading, setIsLoading: setGlobalLoading } = useLoading()
+    const { setIsLoading: setGlobalLoading } = useLoading()
 
     useEffect(() => {
         async function loadData() {
@@ -48,7 +46,7 @@ export default function Dashboard() {
 
             setIsAdmin(profile?.role === 'admin')
 
-            // 0. 清理已过期的链接 (满足用户"删除!!"的要求)
+            // 清理已过期的链接
             await supabase
                 .from('links')
                 .delete()

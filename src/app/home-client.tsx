@@ -14,11 +14,6 @@ import { useLoading } from "@/components/providers/loading-provider"
 import { toast } from "sonner"
 import { AnnouncementConfig } from "@/lib/site-config"
 
-// 动态导入装饰图形组件，避免阻塞首屏渲染
-const DecorativeShapes = dynamic(
-    () => import('@/components/decorative-shapes').then(m => ({ default: m.DecorativeShapes })),
-    { ssr: false }
-)
 
 interface HomeClientProps {
     announcementConfig: AnnouncementConfig
@@ -79,8 +74,6 @@ export function HomeClient({ announcementConfig, allowPublicShorten, children }:
     return (
         <>
             <main className="flex min-h-[100dvh] flex-col items-center justify-center relative p-4 md:p-24">
-                {/* 装饰图形 */}
-                <DecorativeShapes variant="home" />
 
                 {/* 顶部导航区 */}
                 {!loading && (

@@ -81,10 +81,11 @@ export function LinkFormFields({
     const setPasswordError = externalSetPasswordError ?? setInternalPasswordError
 
     useEffect(() => {
-        if (typeof window !== 'undefined') {
-            setHost(window.location.host)
-        }
         async function fetchAndGeneratePlaceholder() {
+            // 设置 host (客户端)
+            if (typeof window !== 'undefined') {
+                setHost(window.location.host)
+            }
             const settings = await getLinksSettings()
             const generated = nanoid(settings.slugLength)
             setPlaceholderSlug(generated)
@@ -234,8 +235,8 @@ export function LinkFormFields({
                                 </div>
                             </div>
 
-                            {/* 有效期 + 密码保护 (同一行) */}
-                            <div className="grid grid-cols-2 gap-4 w-full">
+                            {/* 有效期 + 密码保护 */}
+                            <div className="flex flex-col gap-4">
                                 {/* 有效期 */}
                                 <div className="flex flex-col space-y-1.5 w-full">
                                     <Label className="text-xs text-muted-foreground">有效期</Label>

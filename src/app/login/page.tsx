@@ -22,7 +22,6 @@ import { TurnstileInline, TurnstileInlineRef } from "@/components/turnstile-inli
 import { getPublicSecuritySettings } from "@/app/admin/actions"
 import { getSiteSettings } from "@/app/dashboard/settings-actions"
 import { useEffect } from "react"
-import { DecorativeShapes } from "@/components/decorative-shapes"
 import { PasswordStrength } from "@/components/password-strength"
 
 // 视图状态类型
@@ -297,8 +296,6 @@ export default function LoginPage(props: {
     return (
         <>
             <div className="relative flex min-h-screen items-center justify-center">
-                {/* 装饰图形 */}
-                <DecorativeShapes variant="login" />
 
                 {/* --- 返回首页/返回按钮 --- */}
                 <FadeIn delay={0} className="absolute top-4 left-4 md:top-8 md:left-8 z-20">

@@ -12,7 +12,7 @@ import {
     EmptyTitle,
 } from "@/components/ui/empty"
 
-interface Link {
+export interface Link {
     id: number
     slug: string
     original_url: string
