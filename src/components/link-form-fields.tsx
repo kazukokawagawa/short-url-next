@@ -217,7 +217,7 @@ export function LinkFormFields({
                                     <Wand2 className={cn("absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4", slug ? "text-purple-500" : "text-muted-foreground")} />
                                     <Input
                                         id="custom-suffix-input"
-                                        name="custom-suffix-xyz"
+                                        name="slug"
                                         placeholder={placeholderSlug || "my-custom-name"}
                                         value={slug}
                                         onChange={(e) => setSlug(e.target.value)}
